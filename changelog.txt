@@ -149,3 +149,22 @@
   - Shows trigger status and settings values
   - Helps identify configuration issues
 - Both notifications and adzan now respect their respective settings
+
+## Version 2.4.3 - Audio File Update
+- Updated adzan audio file name: "Adzan Salim Bahanan.mp3" → "Adzan Salim.mp3"
+- Updated all references in options page, adzan player, and test functionality
+- Maintained compatibility with existing user settings
+
+## Version 2.4.4 - Mozilla Validation Fix
+- Fixed Mozilla validation error for audio file naming
+- Renamed "Adzan Salim.mp3" → "adzan3.mp3" for compatibility
+- Updated display name to "Adzan 3" in settings
+- All references updated across extension files
+
+## Version 2.4.5 - Simplified Audio Options
+- Removed "Adzan 3" option due to Mozilla validation issues
+- Now includes 3 adzan options:
+  - Azan TV3 (default)
+  - Azan Jiharkah Munif Hijjaz
+  - Azan Ustaz Asri Ibrahim [Rabbani]
+- Cleaned up all references across extension files

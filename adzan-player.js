@@ -21,7 +21,6 @@ const soundMap = {
   'default': 'audio/athan.mp3',
   'Azan Jiharkah Munif Hijjaz.mp3': 'audio/Azan Jiharkah Munif Hijjaz.mp3',
   'Azan TV3.mp3': 'audio/Azan TV3.mp3',
-  'Adzan Salim Bahanan.mp3': 'audio/Adzan Salim Bahanan.mp3',
   'Azan Ustaz Asri Ibrahim [Rabbani].mp3': 'audio/Azan Ustaz Asri Ibrahim [Rabbani].mp3'
 };
 
