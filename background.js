@@ -246,193 +246,83 @@ let currentAdzanAudio = null;
 let mutedTabs = [];
 let unmuteTimeout = null;
 let adzanNotificationId = null;
+let adzanTabId = null;
+let adzanStartTime = null;
 
-// Play adzan sound with improved tab muting functionality and volume boosting
-async function playAdzanSound(muteTabs = false, adzanSound = 'Azan TV3.mp3', adzanVolume = 100, prayerName = '') { // Set Azan TV3 as default
+// Play adzan sound by opening a dedicated tab
+async function playAdzanSound(muteTabs = false, adzanSound = 'Azan TV3.mp3', adzanVolume = 100, prayerName = '') {
   try {
-    let currentTabId = null;
+    console.log('Starting adzan playback...');
     
-    // Get current tab ID (the adzan tab)
-    try {
-      const currentTabs = await browser.tabs.query({ active: true, currentWindow: true });
-      if (currentTabs && currentTabs.length > 0) {
-        currentTabId = currentTabs[0].id;
-      }
-    } catch (tabError) {
-      console.warn('Could not get current tab ID:', tabError);
+    // Skip if adzan is disabled or set to none
+    if (adzanSound === 'none') {
+      return;
     }
     
-    // Mute audio tabs if requested (but not the current adzan tab)
+    // Mute audio tabs if requested
     if (muteTabs) {
       try {
-        console.log('Muting audio tabs (excluding adzan tab)...');
-        // Get all tabs
+        console.log('Muting audio tabs...');
         const tabs = await browser.tabs.query({});
         
-        // Mute only tabs that are playing audio and are not the current tab
         for (const tab of tabs) {
-          // Skip the current tab (adzan tab) and tabs that are not audible
-          if ((tab.id === currentTabId) || (!tab.audible)) {
-            continue;
-          }
-          
-          try {
-            await browser.tabs.update(tab.id, { muted: true });
-            mutedTabs.push(tab.id);
-            console.log(`Muted audio tab ${tab.id}`);
-          } catch (tabError) {
-            console.warn(`Could not mute tab ${tab.id}:`, tabError);
+          if (tab.audible) {
+            try {
+              await browser.tabs.update(tab.id, { muted: true });
+              mutedTabs.push(tab.id);
+              console.log(`Muted audio tab ${tab.id}`);
+            } catch (tabError) {
+              console.warn(`Could not mute tab ${tab.id}:`, tabError);
+            }
           }
         }
-        
         console.log(`Muted ${mutedTabs.length} audio tabs during adzan`);
       } catch (muteError) {
         console.error('Error muting audio tabs:', muteError);
       }
     }
     
-    // Skip if adzan is disabled or set to none
-    if (adzanSound === 'none') {
-      // Unmute tabs and return
-      if (mutedTabs.length > 0) {
-        await unmuteTabsAfterDelay();
-      }
-      return;
-    }
+    // Store adzan start time
+    adzanStartTime = Date.now();
     
-    // Map adzan sound to actual file
-    const soundMap = {
-      'default': 'audio/athan.mp3',
-      'Azan Jiharkah Furqan.mp3': 'audio/Azan Jiharkah Furqan.mp3',
-      'Azan Jiharkah Munif Hijjaz.mp3': 'audio/Azan Jiharkah Munif Hijjaz.mp3',
-      'Azan TV3.mp3': 'audio/Azan TV3.mp3'
-      // Removed simple-bell since it's not in the audio folder
-    };
+    // Create adzan player HTML page
+    const adzanPlayerUrl = browser.runtime.getURL('adzan-player.html') + 
+      `?sound=${encodeURIComponent(adzanSound)}&volume=${adzanVolume}&prayer=${encodeURIComponent(prayerName)}`;
     
-    const soundFile = soundMap[adzanSound] || soundMap['Azan TV3.mp3']; // Set Azan TV3 as fallback default
-    
-    // Create audio element and play with improved performance
-    currentAdzanAudio = new Audio(browser.runtime.getURL(soundFile));
-    
-    // Set volume (convert percentage to 0.0-6.0 range for up to 600% boost)
-    try {
-      // Convert 0-100% to 0.0-6.0 for up to 600% volume boost
-      const volumeMultiplier = Math.min(6.0, Math.max(0.0, (adzanVolume / 100) * 6));
-      currentAdzanAudio.volume = volumeMultiplier > 1.0 ? 1.0 : volumeMultiplier; // HTML5 audio max is 1.0
-      
-      // If volume boost is requested (>100%), use Web Audio API for boosting
-      if (volumeMultiplier > 1.0) {
-        // Create persistent AudioContext for volume boosting (reuse if exists)
-        if (!audioContext) {
-          audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        
-        // Ensure AudioContext is running (required for modern browsers)
-        if (audioContext.state === 'suspended') {
-          await audioContext.resume();
-        }
-        
-        const source = audioContext.createMediaElementSource(currentAdzanAudio);
-        const gainNode = audioContext.createGain();
-        
-        // Set gain to boost volume (1.0 = 100%, 6.0 = 600%)
-        gainNode.gain.value = volumeMultiplier;
-        
-        // Connect the audio graph: source -> gain -> destination
-        source.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        console.log(`Volume boosted to ${volumeMultiplier * 100}% (${volumeMultiplier}x)`);
-      }
-    } catch (volumeError) {
-      console.warn('Could not set volume boost:', volumeError);
-      currentAdzanAudio.volume = 1.0; // Max volume as fallback
-    }
-    
-    // Preload audio for faster playback
-    currentAdzanAudio.preload = 'auto';
-    
-    // Show notification with stop button
-    adzanNotificationId = await browser.notifications.create({
-      type: 'basic',
-      iconUrl: browser.runtime.getURL('icons/icon-48.png'),
-      title: `${prayerName} Prayer Time`,
-      message: 'Adzan is playing. Click to stop.',
-      buttons: [{
-        title: 'Stop Adzan'
-      }]
+    // Open adzan player in a new tab
+    const tab = await browser.tabs.create({
+      url: adzanPlayerUrl,
+      active: true
     });
     
-    // Listen for notification button click
-    const handleNotificationClick = (notificationId, buttonIndex) => {
-      if (notificationId === adzanNotificationId && buttonIndex === 0) {
-        stopAdzan();
-        browser.notifications.onButtonClicked.removeListener(handleNotificationClick);
-      }
-    };
+    adzanTabId = tab.id;
+    console.log('Adzan player tab opened:', adzanTabId);
     
-    browser.notifications.onButtonClicked.addListener(handleNotificationClick);
-    
-    // Handle notification close (cleanup)
-    const handleNotificationClose = (notificationId) => {
-      if (notificationId === adzanNotificationId) {
-        browser.notifications.onClosed.removeListener(handleNotificationClose);
-      }
-    };
-    
-    browser.notifications.onClosed.addListener(handleNotificationClose);
-    
-    // Play audio with error handling
-    await currentAdzanAudio.play().catch(error => {
-      console.error('Error playing adzan sound:', error);
-      throw error;
-    });
-    
-    console.log('Adzan sound started playing');
-    
-    // Wait for audio to finish
-    await new Promise((resolve) => {
-      currentAdzanAudio.addEventListener('ended', () => {
-        console.log('Adzan sound finished playing');
-        resolve();
-      });
-      
-      // Also resolve if there's an error
-      currentAdzanAudio.addEventListener('error', (error) => {
-        console.error('Adzan sound error:', error);
-        resolve();
-      });
-    });
-    
-    // Close the notification when adzan finishes
-    if (adzanNotificationId) {
-      browser.notifications.clear(adzanNotificationId);
-    }
-    
-    // Unmute tabs after adzan finishes
-    await unmuteTabsAfterDelay();
   } catch (error) {
     console.error('Error playing adzan sound:', error);
-    
-    // Close the notification on error
-    if (adzanNotificationId) {
-      browser.notifications.clear(adzanNotificationId);
-    }
-    
     // Make sure to unmute tabs even if there's an error
     await unmuteTabsAfterDelay();
   }
 }
 
 // Stop adzan playback
-function stopAdzan() {
+async function stopAdzan() {
   try {
-    // Stop audio if playing
-    if (currentAdzanAudio) {
-      currentAdzanAudio.pause();
-      currentAdzanAudio = null;
-      console.log('Adzan stopped by user');
+    console.log('Stopping adzan...');
+    
+    // Close adzan tab if open
+    if (adzanTabId) {
+      try {
+        await browser.tabs.remove(adzanTabId);
+        console.log('Adzan tab closed');
+      } catch (tabError) {
+        console.warn('Could not close adzan tab:', tabError);
+      }
+      adzanTabId = null;
     }
+    
+    // Clear start time
+    adzanStartTime = null;
     
     // Close the notification
     if (adzanNotificationId) {
@@ -440,12 +330,32 @@ function stopAdzan() {
       adzanNotificationId = null;
     }
     
-    // Unmute tabs after delay
-    unmuteTabsAfterDelay();
+    // Unmute tabs immediately
+    await unmuteTabs(mutedTabs);
+    mutedTabs = [];
   } catch (error) {
     console.error('Error stopping adzan:', error);
   }
 }
+
+// Listen for messages from adzan player
+browser.runtime.onMessage.addListener((message, sender) => {
+  if (message.type === 'adzanFinished') {
+    console.log('Adzan finished playing');
+    adzanTabId = null;
+    adzanStartTime = null;
+    unmuteTabsAfterDelay();
+  } else if (message.type === 'getAdzanStatus') {
+    // Return adzan status to popup
+    return Promise.resolve({
+      isPlaying: adzanTabId !== null,
+      startTime: adzanStartTime,
+      tabId: adzanTabId
+    });
+  } else if (message.type === 'stopAdzan') {
+    stopAdzan();
+  }
+});
 
 // Unmute tabs after a 10-second delay
 async function unmuteTabsAfterDelay() {

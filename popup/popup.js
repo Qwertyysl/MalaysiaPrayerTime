@@ -21,6 +21,10 @@ document.addEventListener('DOMContentLoaded', function() {
   updateClock();
   setInterval(updateClock, 1000);
 
+  // Check adzan status
+  checkAdzanStatus();
+  setInterval(checkAdzanStatus, 1000);
+
   // Refresh button event listener
   refreshButton.addEventListener('click', function() {
     updatePrayerTimes();
@@ -288,6 +292,43 @@ document.addEventListener('DOMContentLoaded', function() {
     dayNameElement.textContent = days[now.getDay()];
     dateValueElement.textContent = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
   }
+  
+  // Check adzan status and update countdown
+  async function checkAdzanStatus() {
+    try {
+      const response = await browser.runtime.sendMessage({ type: 'getAdzanStatus' });
+      
+      const adzanStatusElement = document.getElementById('adzan-status');
+      const adzanCountdownElement = document.getElementById('adzan-countdown');
+      
+      if (response && response.isPlaying && response.startTime) {
+        // Show adzan status
+        adzanStatusElement.style.display = 'block';
+        
+        // Calculate remaining time (assume 5 minutes max for adzan)
+        const elapsed = (Date.now() - response.startTime) / 1000; // seconds
+        const totalDuration = 300; // 5 minutes in seconds (approximate)
+        const remaining = Math.max(0, totalDuration - elapsed);
+        
+        const minutes = Math.floor(remaining / 60);
+        const seconds = Math.floor(remaining % 60);
+        
+        adzanCountdownElement.textContent = 
+          `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      } else {
+        // Hide adzan status
+        adzanStatusElement.style.display = 'none';
+      }
+    } catch (error) {
+      console.error('Error checking adzan status:', error);
+    }
+  }
+  
+  // Stop adzan button handler
+  document.getElementById('stop-adzan-btn').addEventListener('click', function() {
+    browser.runtime.sendMessage({ type: 'stopAdzan' });
+    document.getElementById('adzan-status').style.display = 'none';
+  });
 
   // Initial update
   updatePrayerTimes();

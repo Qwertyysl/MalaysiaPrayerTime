@@ -169,3 +169,60 @@ td:last-child {
 #settings-btn {
   background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
 }
+
+.adzan-status {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+}
+
+.adzan-playing {
+  font-weight: 600;
+  font-size: 1.1em;
+  margin-bottom: 8px;
+}
+
+.adzan-countdown {
+  font-size: 1.8em;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  margin: 8px 0;
+  letter-spacing: 2px;
+}
+
+.stop-adzan-btn {
+  background: #ff4757;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.stop-adzan-btn:hover {
+  background: #ff3838;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.stop-adzan-btn:active {
+  transform: translateY(0);
+}
