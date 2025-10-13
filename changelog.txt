@@ -116,3 +116,20 @@
 - Added <all_urls> permission for media control
 - Improved user experience - videos/music resume from where they were paused
 - Dual approach: pause media + mute tab for maximum reliability
+
+## Version 2.3.1 - Audio Playback Fix
+- Fixed adzan not playing due to tab creation order issue
+- Adzan tab now created before pausing other tabs
+- Added explicit audio.load() call for better reliability
+- Added 5-second timeout for metadata loading
+- Improved error handling and console logging
+- Fixed popup doa countdown by resetting start time
+
+## Version 2.4 - Multiple Warnings & Better Triggering
+- Added notifications for 5, 4, 3, 2, and 1 minute warnings before prayer
+- Fixed adzan triggering when manually adjusting system time
+- Changed trigger logic from daily to per-minute basis
+- Adzan now plays whenever time matches, not just once per day
+- Prevents duplicate triggers within the same minute
+- Automatic cleanup of old trigger entries to prevent memory leaks
+- Better testing support for time adjustments

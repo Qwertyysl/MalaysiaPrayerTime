@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Prayer Times Terengganu by Nazmi",
-  "version": "2.3.1",
+  "version": "2.4.2",
   "description": "Displays accurate Islamic prayer times for Kuala Terengganu, Malaysia using JAKIM API",
   
   "icons": {
