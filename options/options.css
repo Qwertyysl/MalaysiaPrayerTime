@@ -211,3 +211,36 @@ button:disabled {
   color: #721c24;
   border: 1px solid #f5c6cb;
 }
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.button-group button {
+  flex: 1;
+  min-width: 150px;
+  margin: 0;
+}
+
+.secondary-btn {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+}
+
+.secondary-btn:hover {
+  background: linear-gradient(135deg, #3aa3ff 0%, #00d9ff 100%) !important;
+}
+
+.footer {
+  margin-top: 30px;
+  padding: 20px 0 10px 0;
+  border-top: 2px solid #e0e0e0;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

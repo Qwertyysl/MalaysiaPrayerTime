@@ -45,6 +45,18 @@ document.addEventListener('DOMContentLoaded', function() {
       volumeValue.textContent = this.value + '%';
     });
   }
+  
+  // Set up developer mode toggle
+  const developerModeCheckbox = document.getElementById('developer-mode');
+  const testSection = document.getElementById('test-section');
+  
+  developerModeCheckbox.addEventListener('change', function() {
+    if (this.checked) {
+      testSection.style.display = 'block';
+    } else {
+      testSection.style.display = 'none';
+    }
+  });
 });
 
 // Load settings from storage
@@ -54,7 +66,8 @@ function loadSettings() {
     'enableNotifications',
     'enableAthan',
     'muteTabsDuringAthan',
-    'adzanVolume'
+    'adzanVolume',
+    'developerMode'
   ]).then((result) => {
     // Set form values
     document.getElementById('adzan-sound').value = 
@@ -76,6 +89,11 @@ function loadSettings() {
       volumeSlider.value = result.adzanVolume !== undefined ? result.adzanVolume : 100;
       volumeValue.textContent = volumeSlider.value + '%';
     }
+    
+    // Set developer mode and show/hide test section
+    const developerMode = result.developerMode || false;
+    document.getElementById('developer-mode').checked = developerMode;
+    document.getElementById('test-section').style.display = developerMode ? 'block' : 'none';
   });
 }
 
@@ -86,7 +104,8 @@ function saveSettings() {
     enableNotifications: document.getElementById('enable-notifications').checked,
     enableAthan: document.getElementById('enable-athan').checked,
     muteTabsDuringAthan: document.getElementById('mute-tabs-during-athan').checked,
-    adzanVolume: parseInt(document.getElementById('adzan-volume').value)
+    adzanVolume: parseInt(document.getElementById('adzan-volume').value),
+    developerMode: document.getElementById('developer-mode').checked
   };
   
   browser.storage.local.set(settings).then(() => {

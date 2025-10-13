@@ -57,17 +57,15 @@ async function playAdzan() {
       document.getElementById('volume-info').textContent = `Volume: ${adzanVolume}%`;
     }
     
-    // Wait for metadata to load to get duration
-    audio.addEventListener('loadedmetadata', () => {
-      audioDuration = audio.duration;
-      console.log('Audio duration:', audioDuration);
-    });
-    
     // Handle audio end
     audio.addEventListener('ended', () => {
       console.log('Adzan finished');
       document.getElementById('status').textContent = 'Adzan completed';
       document.getElementById('countdown').textContent = '00:00';
+      
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+      }
       
       // Notify background script
       browser.runtime.sendMessage({ type: 'adzanFinished' });
@@ -91,13 +89,22 @@ async function playAdzan() {
       }, 3000);
     });
     
+    // Wait for metadata to load before playing
+    await new Promise((resolve) => {
+      audio.addEventListener('loadedmetadata', () => {
+        audioDuration = audio.duration;
+        console.log('Audio duration:', audioDuration);
+        resolve();
+      });
+    });
+    
     // Play audio
     await audio.play();
     startTime = Date.now();
     
     document.getElementById('status').textContent = '🔊 Playing Adzan';
     
-    // Start countdown
+    // Start countdown after audio starts playing
     startCountdown();
     
   } catch (error) {

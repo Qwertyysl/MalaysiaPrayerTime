@@ -43,24 +43,31 @@
         </label>
       </div>
       
-      <button type="submit">Save Settings</button>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="developer-mode"> Enable Developer Options
+        </label>
+      </div>
+      
+      <div class="button-group">
+        <button type="submit">Save Settings</button>
+        <button type="button" id="changelog-btn" class="secondary-btn">View Changelog</button>
+      </div>
     </form>
     
-    <div class="test-section">
-      <h2>Test Adzan</h2>
+    <div class="test-section" id="test-section" style="display: none;">
+      <h2>Developer Options</h2>
       <p>Click the button below to test the adzan sound with a 10-second countdown.</p>
       <button id="test-adzan-btn">Test Adzan (10s countdown)</button>
       <button id="stop-adzan-btn" style="display: none;">Stop Adzan</button>
       <div id="countdown-display"></div>
     </div>
     
-    <div class="changelog-section">
-      <h2>Changelog</h2>
-      <p>View the complete history of updates and fixes.</p>
-      <button id="changelog-btn">View Changelog</button>
-    </div>
-    
     <div id="status-message"></div>
+    
+    <div class="footer">
+      Made with ❤️ by Nazmi
+    </div>
   </div>
   
   <script src="options.js"></script>

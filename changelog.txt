@@ -66,3 +66,23 @@
 - Implemented 10-second delayed unmute for both natural finish and manual stop
 - Added notification with stop button for better user control
 - Improved adzan playback reliability and user experience
+
+## Version 1.9 - Major Adzan System Overhaul
+- FIXED: Adzan now plays correctly when prayer time matches (previously not working)
+- Implemented dedicated adzan player tab for reliable audio playback
+- Added real-time backward countdown timer in adzan player (MM:SS format)
+- Added countdown display in popup when adzan is playing
+- Added stop button in both adzan player tab and popup
+- Improved tab muting system to work with new player architecture
+- Enhanced audio playback reliability using tab-based approach
+- Fixed background script audio limitations in Firefox
+
+## Version 2.0 - Developer Options & UI Refinements
+- Added "Enable Developer Options" checkbox in settings
+- Test Adzan feature now hidden by default (only visible when developer mode enabled)
+- Reorganized settings page for cleaner, more professional layout
+- Moved "View Changelog" button beside "Save Settings" button for compact design
+- Fixed adzan player countdown not working (now properly waits for audio metadata)
+- Improved settings page organization and user experience
+- Added persistent developer mode preference
+- Enhanced overall extension polish and usability
