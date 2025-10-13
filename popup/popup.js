@@ -305,9 +305,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show adzan status
         adzanStatusElement.style.display = 'block';
         
-        // Calculate remaining time (assume 5 minutes max for adzan)
+        // Calculate remaining time using actual duration from adzan player
         const elapsed = (Date.now() - response.startTime) / 1000; // seconds
-        const totalDuration = 300; // 5 minutes in seconds (approximate)
+        const totalDuration = response.totalDuration || 300; // Use actual duration or fallback to 5 minutes
         const remaining = Math.max(0, totalDuration - elapsed);
         
         const minutes = Math.floor(remaining / 60);
@@ -316,7 +316,11 @@ document.addEventListener('DOMContentLoaded', function() {
         adzanCountdownElement.textContent = 
           `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
       } else {
-        // Hide adzan status
+        // Hide adzan status and refresh prayer times after adzan finishes
+        if (adzanStatusElement.style.display === 'block') {
+          // Adzan just finished, refresh the prayer times display
+          updatePrayerTimes();
+        }
         adzanStatusElement.style.display = 'none';
       }
     } catch (error) {

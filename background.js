@@ -244,6 +244,7 @@ async function checkFiveMinuteWarning() {
 // Global variables for adzan playback control
 let currentAdzanAudio = null;
 let mutedTabs = [];
+let pausedTabs = [];
 let unmuteTimeout = null;
 let adzanNotificationId = null;
 let adzanTabId = null;
@@ -257,29 +258,6 @@ async function playAdzanSound(muteTabs = false, adzanSound = 'Azan TV3.mp3', adz
     // Skip if adzan is disabled or set to none
     if (adzanSound === 'none') {
       return;
-    }
-    
-    // Mute audio tabs if requested
-    if (muteTabs) {
-      try {
-        console.log('Muting audio tabs...');
-        const tabs = await browser.tabs.query({});
-        
-        for (const tab of tabs) {
-          if (tab.audible) {
-            try {
-              await browser.tabs.update(tab.id, { muted: true });
-              mutedTabs.push(tab.id);
-              console.log(`Muted audio tab ${tab.id}`);
-            } catch (tabError) {
-              console.warn(`Could not mute tab ${tab.id}:`, tabError);
-            }
-          }
-        }
-        console.log(`Muted ${mutedTabs.length} audio tabs during adzan`);
-      } catch (muteError) {
-        console.error('Error muting audio tabs:', muteError);
-      }
     }
     
     // Store adzan start time
@@ -297,6 +275,56 @@ async function playAdzanSound(muteTabs = false, adzanSound = 'Azan TV3.mp3', adz
     
     adzanTabId = tab.id;
     console.log('Adzan player tab opened:', adzanTabId);
+    
+    // Pause media in tabs if requested (after creating adzan tab)
+    if (muteTabs) {
+      try {
+        console.log('Pausing media in tabs...');
+        const tabs = await browser.tabs.query({});
+        
+        for (const currentTab of tabs) {
+          // Skip the adzan tab itself
+          if (currentTab.id === adzanTabId) {
+            console.log(`Skipping adzan tab ${currentTab.id}`);
+            continue;
+          }
+          
+          try {
+            // Execute script to pause all media elements
+            await browser.tabs.executeScript(currentTab.id, {
+              code: `
+                (function() {
+                  const mediaElements = document.querySelectorAll('video, audio');
+                  let pausedCount = 0;
+                  mediaElements.forEach(media => {
+                    if (!media.paused) {
+                      media.pause();
+                      media.dataset.adzanPaused = 'true';
+                      pausedCount++;
+                    }
+                  });
+                  return pausedCount;
+                })();
+              `
+            });
+            
+            // Also mute the tab as backup
+            if (currentTab.audible) {
+              await browser.tabs.update(currentTab.id, { muted: true });
+              mutedTabs.push(currentTab.id);
+            }
+            
+            pausedTabs.push(currentTab.id);
+            console.log(`Paused media in tab ${currentTab.id}`);
+          } catch (tabError) {
+            console.warn(`Could not pause media in tab ${currentTab.id}:`, tabError);
+          }
+        }
+        console.log(`Paused media in ${pausedTabs.length} tabs during adzan`);
+      } catch (pauseError) {
+        console.error('Error pausing media in tabs:', pauseError);
+      }
+    }
     
   } catch (error) {
     console.error('Error playing adzan sound:', error);
@@ -330,13 +358,15 @@ async function stopAdzan() {
       adzanNotificationId = null;
     }
     
-    // Unmute tabs immediately
-    await unmuteTabs(mutedTabs);
-    mutedTabs = [];
+    // Unpause media and unmute tabs immediately
+    await unpauseMediaAndUnmuteTabs();
   } catch (error) {
     console.error('Error stopping adzan:', error);
   }
 }
+
+// Store total duration from adzan player
+let adzanTotalDuration = 0;
 
 // Listen for messages from adzan player
 browser.runtime.onMessage.addListener((message, sender) => {
@@ -344,18 +374,65 @@ browser.runtime.onMessage.addListener((message, sender) => {
     console.log('Adzan finished playing');
     adzanTabId = null;
     adzanStartTime = null;
+    adzanTotalDuration = 0;
     unmuteTabsAfterDelay();
+  } else if (message.type === 'adzanStarted') {
+    // Store the total duration when adzan starts
+    adzanTotalDuration = message.duration || 0;
+    console.log('Adzan started with duration:', adzanTotalDuration);
   } else if (message.type === 'getAdzanStatus') {
     // Return adzan status to popup
     return Promise.resolve({
       isPlaying: adzanTabId !== null,
       startTime: adzanStartTime,
-      tabId: adzanTabId
+      tabId: adzanTabId,
+      totalDuration: adzanTotalDuration
     });
   } else if (message.type === 'stopAdzan') {
     stopAdzan();
   }
 });
+
+// Unpause media and unmute tabs
+async function unpauseMediaAndUnmuteTabs() {
+  try {
+    console.log('Unpausing media and unmuting tabs...');
+    
+    // Unpause media in all paused tabs
+    for (const tabId of pausedTabs) {
+      try {
+        await browser.tabs.executeScript(tabId, {
+          code: `
+            (function() {
+              const mediaElements = document.querySelectorAll('video, audio');
+              let unpausedCount = 0;
+              mediaElements.forEach(media => {
+                if (media.dataset.adzanPaused === 'true') {
+                  media.play();
+                  delete media.dataset.adzanPaused;
+                  unpausedCount++;
+                }
+              });
+              return unpausedCount;
+            })();
+          `
+        });
+        console.log(`Unpaused media in tab ${tabId}`);
+      } catch (tabError) {
+        console.warn(`Could not unpause media in tab ${tabId}:`, tabError);
+      }
+    }
+    
+    // Unmute tabs
+    await unmuteTabs(mutedTabs);
+    
+    // Clear arrays
+    pausedTabs = [];
+    mutedTabs = [];
+  } catch (error) {
+    console.error('Error unpausing media and unmuting tabs:', error);
+  }
+}
 
 // Unmute tabs after a 10-second delay
 async function unmuteTabsAfterDelay() {
@@ -366,12 +443,9 @@ async function unmuteTabsAfterDelay() {
       unmuteTimeout = null;
     }
     
-    // Schedule automatic unmuting in 10 seconds
+    // Schedule automatic unpausing and unmuting in 10 seconds
     unmuteTimeout = setTimeout(async () => {
-      if (mutedTabs.length > 0) {
-        await unmuteTabs(mutedTabs);
-        mutedTabs = [];
-      }
+      await unpauseMediaAndUnmuteTabs();
     }, 10000); // 10 seconds
   } catch (error) {
     console.error('Error scheduling unmute:', error);
@@ -396,8 +470,26 @@ async function unmuteTabs(tabIds) {
   }
 }
 
+// Clear triggered prayers at midnight
+function scheduleMiddnightReset() {
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  
+  const msUntilMidnight = tomorrow.getTime() - now.getTime();
+  
+  setTimeout(() => {
+    console.log('Midnight reset - clearing triggered prayers');
+    triggeredPrayers.clear();
+    // Schedule next midnight reset
+    scheduleMiddnightReset();
+  }, msUntilMidnight);
+}
+
 // Initialize on extension install
 browser.runtime.onInstalled.addListener(() => {
   console.log('Prayer Times extension installed');
   updatePrayerTimes();
+  scheduleMiddnightReset();
 });

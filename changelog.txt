@@ -86,3 +86,33 @@
 - Improved settings page organization and user experience
 - Added persistent developer mode preference
 - Enhanced overall extension polish and usability
+- Added "Made with ❤️ by Nazmi" footer in settings page
+
+## Version 2.1 - Doa Integration & New Adzan Options
+- Added automatic doa playback after every adzan
+- Doa file: "RUJUKAN DAN HAFALAN_ DOA SELEPAS AZAN (JAWI & RUMI).mp3"
+- Tabs remain muted during both adzan and doa playback
+- Tabs only unmute after doa finishes (not after adzan)
+- Added new adzan options:
+  - Adzan Salim Bahanan
+  - Azan Ustaz Asri Ibrahim [Rabbani]
+- Removed: Azan Jiharkah Furqan (no longer available)
+- Updated adzan player to show "Playing Doa" status
+- Countdown timer works for both adzan and doa
+- Enhanced audio playback sequence for seamless transition
+
+## Version 2.2 - Countdown Accuracy & Auto-Refresh
+- Fixed popup countdown to show actual audio duration instead of fixed 5 minutes
+- Popup now auto-refreshes after adzan/doa finishes
+- Added midnight reset to clear triggered prayers for next day
+- Improved prayer triggering to ensure each prayer plays only once per day
+- Countdown now accurately reflects remaining time for both adzan and doa
+
+## Version 2.3 - Media Pause/Resume Feature
+- Changed from muting to pausing media in other tabs
+- All video and audio elements are now paused when adzan starts
+- Media automatically resumes playing after doa finishes
+- Fixed stop button to properly unpause media when clicked
+- Added <all_urls> permission for media control
+- Improved user experience - videos/music resume from where they were paused
+- Dual approach: pause media + mute tab for maximum reliability

@@ -225,10 +225,10 @@ async function playAdzanSound() {
     // Map adzan sound to actual file
     const soundMap = {
       'default': 'audio/athan.mp3',
-      'Azan Jiharkah Furqan.mp3': 'audio/Azan Jiharkah Furqan.mp3',
       'Azan Jiharkah Munif Hijjaz.mp3': 'audio/Azan Jiharkah Munif Hijjaz.mp3',
-      'Azan TV3.mp3': 'audio/Azan TV3.mp3'
-      // Removed simple-bell since it's not in the audio folder
+      'Azan TV3.mp3': 'audio/Azan TV3.mp3',
+      'Adzan Salim Bahanan.mp3': 'audio/Adzan Salim Bahanan.mp3',
+      'Azan Ustaz Asri Ibrahim [Rabbani].mp3': 'audio/Azan Ustaz Asri Ibrahim [Rabbani].mp3'
     };
     
     const soundFile = soundMap[adzanSound] || soundMap['Azan TV3.mp3']; // Set Azan TV3 as fallback default
