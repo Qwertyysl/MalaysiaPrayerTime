@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="options.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Prayer Times Settings</h1>
+    
+    <form id="settings-form">
+      <div class="form-group">
+        <label for="adzan-sound">Adzan Sound:</label>
+        <select id="adzan-sound">
+          <option value="Azan TV3.mp3">Azan TV3 (default)</option>
+          <option value="Azan Jiharkah Furqan.mp3">Azan Jiharkah Furqan</option>
+          <option value="Azan Jiharkah Munif Hijjaz.mp3">Azan Jiharkah Munif Hijjaz</option>
+          <option value="none">None (silent)</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="adzan-volume">Adzan Volume: <span id="volume-value">100%</span></label>
+        <input type="range" id="adzan-volume" min="0" max="600" value="100">
+        <div class="volume-info">Volume can be boosted up to 600%</div>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="enable-notifications"> Enable Notifications
+        </label>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="enable-athan"> Enable Athan Audio
+        </label>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="mute-tabs-during-athan"> Mute other tabs during Athan
+        </label>
+      </div>
+      
+      <button type="submit">Save Settings</button>
+    </form>
+    
+    <div class="test-section">
+      <h2>Test Adzan</h2>
+      <p>Click the button below to test the adzan sound with a 10-second countdown.</p>
+      <button id="test-adzan-btn">Test Adzan (10s countdown)</button>
+      <button id="stop-adzan-btn" style="display: none;">Stop Adzan</button>
+      <div id="countdown-display"></div>
+    </div>
+    
+    <div class="changelog-section">
+      <h2>Changelog</h2>
+      <p>View the complete history of updates and fixes.</p>
+      <button id="changelog-btn">View Changelog</button>
+    </div>
+    
+    <div id="status-message"></div>
+  </div>
+  
+  <script src="options.js"></script>
+</body>
+</html>

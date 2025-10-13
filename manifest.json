@@ -1,0 +1,40 @@
+{
+  "manifest_version": 2,
+  "name": "Prayer Times Terengganu by Nazmi",
+  "version": "1.8",
+  "description": "Displays accurate Islamic prayer times for Kuala Terengganu, Malaysia using JAKIM API",
+  
+  "icons": {
+    "48": "icons/icon-48.png"
+  },
+
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications",
+    "tabs"
+  ],
+
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+
+  "browser_action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Prayer Times",
+    "default_icon": {
+      "48": "icons/icon-48.png"
+    }
+  },
+
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+
+  "web_accessible_resources": [
+    "audio/*.mp3",
+    "changelog.txt"
+  ]
+}

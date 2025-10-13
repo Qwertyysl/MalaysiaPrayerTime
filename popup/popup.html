@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css"/>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="welcome-text">
+        <div id="welcome-message">Assalamualaikum</div>
+        <div class="date-info">
+          <div id="date-display">
+            Today is <span id="day-name">Monday</span>, 
+            <span id="date-value">1 January 2023</span>
+          </div>
+        </div>
+      </div>
+      <div class="clock" id="current-time">
+        <span class="time">12:00:00</span>
+        <span class="ampm">PM</span>
+      </div>
+    </div>
+    <h1>Prayer Times</h1>
+    <div id="warning-message" class="warning"></div>
+    <div id="prayer-times">
+      <table>
+        <tr>
+          <td>Subuh</td>
+          <td id="subuh-time">--:--</td>
+        </tr>
+        <tr>
+          <td>Zohor</td>
+          <td id="zohor-time">--:--</td>
+        </tr>
+        <tr>
+          <td>Asar</td>
+          <td id="asar-time">--:--</td>
+        </tr>
+        <tr>
+          <td>Maghrib</td>
+          <td id="maghrib-time">--:--</td>
+        </tr>
+        <tr>
+          <td>Isha</td>
+          <td id="isha-time">--:--</td>
+        </tr>
+      </table>
+    </div>
+    <div id="next-prayer">
+      <p>Next prayer: <span id="next-prayer-name">--</span> at <span id="next-prayer-time">--:--</span></p>
+      <p>Time remaining: <span id="countdown">--:--</span></p>
+    </div>
+    <button id="refresh-btn">Refresh</button>
+    <button id="settings-btn">Settings</button>
+  </div>
+  <script src="../utils/prayer-times.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

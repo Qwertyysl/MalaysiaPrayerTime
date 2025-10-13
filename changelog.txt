@@ -1,0 +1,68 @@
+# Prayer Times Extension Changelog
+
+## Version 1.0 - Initial Release
+- Basic prayer times display for Kuala Terengganu
+- JAKIM API integration through Waktu Solat API
+- Popup with prayer times and countdown timer
+- Desktop notifications for prayer times
+
+## Version 1.1 - Enhanced Features
+- Added 5-minute advance warning notifications
+- Implemented customizable adzan sounds:
+  - Azan TV3 (default)
+  - Azan Jiharkah Furqan
+  - Azan Jiharkah Munif Hijjaz
+  - None (silent option)
+- Added settings page for customization
+- Added test adzan feature with 10-second countdown
+
+## Version 1.2 - UI Improvements
+- Added welcome message with date and time display
+- Modernized header design with gradient styling
+- Made popup more compact to eliminate scrolling
+- Converted all time displays to 12-hour format
+- Added refresh button to popup
+
+## Version 1.3 - Audio Enhancements
+- Implemented volume control for adzan sounds
+- Added volume boosting capability up to 600%
+- Used Web Audio API GainNode for volume boosting above 100%
+- Improved audio playback performance with preload optimization
+
+## Version 1.4 - Tab Muting Improvements
+- Enhanced tab muting to only affect audio tabs
+- Excluded adzan tab from muting to ensure adzan plays
+- Added automatic unmuting after adzan finishes
+- Improved reliability of tab muting/unmuting operations
+- Added stop button for test adzan with immediate unmuting
+
+## Version 1.5 - Bug Fixes and Refinements
+- Fixed prayer time API issues with fallback to Aladhan API
+- Resolved tab muting reliability issues
+- Improved error handling throughout the extension
+- Fixed audio playback delays
+- Enhanced UI consistency across all pages
+- Removed unused simple-bell audio option
+- Set Azan TV3 as default adzan sound
+
+## Version 1.6 - Final Enhancements
+- Added comprehensive error handling for all API calls
+- Improved performance of prayer time calculations
+- Enhanced settings page with better organization
+- Added this changelog for tracking updates and fixes
+- Final UI polish for modern, professional appearance
+
+## Version 1.7 - Timing and UI Fixes
+- Fixed adzan playback timing to trigger within 10 seconds of prayer time
+- Increased alarm check frequency from every minute to every 10 seconds
+- Improved time comparison logic for more accurate prayer time detection
+- Fixed volume slider text display to update in real-time
+- Fixed changelog button functionality to properly open changelog
+- Enhanced error handling for more reliable extension operation
+
+## Version 1.8 - Adzan Playback Improvements
+- Fixed duplicate adzan playback issue with prayer tracking mechanism
+- Added stop button during adzan playback with notification interface
+- Implemented 10-second delayed unmute for both natural finish and manual stop
+- Added notification with stop button for better user control
+- Improved adzan playback reliability and user experience

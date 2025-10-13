@@ -1,0 +1,171 @@
+body {
+  width: 280px;
+  padding: 8px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  font-size: 14px;
+}
+
+.container {
+  text-align: center;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.welcome-text {
+  text-align: left;
+  flex: 1;
+}
+
+#welcome-message {
+  font-weight: 600;
+  font-size: 1.1em;
+  margin-bottom: 3px;
+}
+
+.date-info {
+  display: flex;
+  flex-direction: column;
+}
+
+#date-display {
+  font-size: 0.75em;
+  opacity: 0.95;
+  font-weight: 500;
+}
+
+#day-name, #date-value {
+  display: inline;
+}
+
+.clock {
+  font-weight: 600;
+  font-size: 1em;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 5px;
+  backdrop-filter: blur(5px);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.clock .time {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.clock .ampm {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 0.6em;
+  margin-left: 1px;
+}
+
+h1 {
+  font-size: 18px;
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.warning {
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+  color: #5a3e2b;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  border: 1px solid #f6d365;
+  display: none;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 0.9em;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+td:first-child {
+  text-align: left;
+  font-weight: 500;
+  color: #34495e;
+}
+
+td:last-child {
+  text-align: right;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+#next-prayer {
+  background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+#next-prayer-name {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+#next-prayer-time {
+  font-weight: 600;
+  color: #1a237e;
+}
+
+#countdown {
+  font-weight: 700;
+  font-size: 1.2em;
+  color: #1a237e;
+  letter-spacing: 1px;
+}
+
+#refresh-btn, #settings-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 3px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+#refresh-btn:hover, #settings-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+#refresh-btn:active, #settings-btn:active {
+  transform: translateY(0);
+}
+
+#settings-btn {
+  background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+}
