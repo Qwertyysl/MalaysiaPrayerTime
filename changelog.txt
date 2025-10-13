@@ -133,3 +133,19 @@
 - Prevents duplicate triggers within the same minute
 - Automatic cleanup of old trigger entries to prevent memory leaks
 - Better testing support for time adjustments
+
+## Version 2.4.1 - Popup Interference Fix
+- Fixed issue where opening popup would reset and start new adzan player
+- Added guard check to prevent duplicate adzan triggers when popup opens
+- Adzan now continues playing uninterrupted when popup is opened
+- Stop button and countdown continue working correctly
+
+## Version 2.4.2 - Enable Athan Check Fix
+- Fixed adzan not playing even when time matches
+- Added proper check for "Enable Athan Audio" setting before playing
+- Added proper check for "Enable Notifications" setting before showing notifications
+- Added debug console logging for troubleshooting:
+  - Shows prayer time match details
+  - Shows trigger status and settings values
+  - Helps identify configuration issues
+- Both notifications and adzan now respect their respective settings
