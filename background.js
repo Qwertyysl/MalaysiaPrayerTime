@@ -3,8 +3,105 @@
 // Import prayer times calculator
 try {
   importScripts('utils/prayer-times.js');
+  console.log('Prayer times calculator imported successfully');
+  console.log('PrayerTimesCalculator available:', typeof PrayerTimesCalculator !== 'undefined');
 } catch (e) {
   console.error('Failed to import prayer times calculator:', e);
+  console.error('Error details:', e.message, e.stack);
+}
+
+// Fallback: Define getNextPrayer function directly if import fails
+if (typeof PrayerTimesCalculator === 'undefined') {
+  console.log('Creating PrayerTimesCalculator fallback...');
+  var PrayerTimesCalculator = {
+    getNextPrayer: function(prayerTimes) {
+      const now = new Date();
+      const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+      
+      const prayers = [
+        { name: 'Subuh', time: prayerTimes.subuh },
+        { name: 'Zohor', time: prayerTimes.zohor },
+        { name: 'Asar', time: prayerTimes.asar },
+        { name: 'Maghrib', time: prayerTimes.maghrib },
+        { name: 'Isha', time: prayerTimes.isha }
+      ];
+      
+      const prayerMinutes = prayers.map(prayer => {
+        let timeStr = prayer.time;
+        let hours, minutes;
+        
+        if (timeStr.includes('AM') || timeStr.includes('PM')) {
+          const timeParts = timeStr.split(' ');
+          const time = timeParts[0];
+          const period = timeParts[1];
+          [hours, minutes] = time.split(':').map(Number);
+          
+          if (period === 'PM' && hours !== 12) {
+            hours += 12;
+          } else if (period === 'AM' && hours === 12) {
+            hours = 0;
+          }
+        } else {
+          [hours, minutes] = timeStr.split(':').map(Number);
+        }
+        
+        return hours * 60 + minutes;
+      });
+      
+      let nextPrayerIndex = -1;
+      for (let i = 0; i < prayerMinutes.length; i++) {
+        if (prayerMinutes[i] > currentTimeInMinutes) {
+          nextPrayerIndex = i;
+          break;
+        }
+      }
+      
+      if (nextPrayerIndex === -1) {
+        nextPrayerIndex = 0;
+      }
+      
+      let timeRemainingInMinutes;
+      if (nextPrayerIndex === 0 && prayerMinutes[nextPrayerIndex] < currentTimeInMinutes) {
+        timeRemainingInMinutes = (24 * 60 - currentTimeInMinutes) + prayerMinutes[nextPrayerIndex];
+      } else {
+        timeRemainingInMinutes = prayerMinutes[nextPrayerIndex] - currentTimeInMinutes;
+      }
+      
+      const hours = Math.floor(timeRemainingInMinutes / 60);
+      const minutes = timeRemainingInMinutes % 60;
+      
+      return {
+        name: prayers[nextPrayerIndex].name,
+        time: prayers[nextPrayerIndex].time,
+        hours: hours,
+        minutes: minutes,
+        totalMinutes: timeRemainingInMinutes
+      };
+    },
+    
+    getPrayerTimes: async function(locationCode = 'trg01') {
+      const response = await fetch(`https://api.waktusolat.app/v2/solat/${locationCode}`);
+      const data = await response.json();
+      const today = new Date();
+      const todayDay = today.getDate();
+      const todayData = data.prayers.find(day => day.day === todayDay);
+      
+      const formatTime12Hour = (timestamp) => {
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      };
+      
+      return {
+        subuh: formatTime12Hour(todayData.fajr),
+        zohor: formatTime12Hour(todayData.dhuhr),
+        asar: formatTime12Hour(todayData.asr),
+        maghrib: formatTime12Hour(todayData.maghrib),
+        isha: formatTime12Hour(todayData.isha),
+        date: `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${todayDay.toString().padStart(2, '0')}`
+      };
+    }
+  };
+  console.log('PrayerTimesCalculator fallback created');
 }
 
 // Persistent AudioContext for volume boosting
@@ -62,8 +159,49 @@ async function updatePrayerTimes() {
     });
     
     console.log('Prayer times updated:', prayerTimes);
+    
+    // Update badge with next prayer
+    updateBadgeText(prayerTimes);
   } catch (error) {
     console.error('Error updating prayer times:', error);
+  }
+}
+
+// Update badge text with next prayer name
+function updateBadgeText(prayerTimes) {
+  try {
+    if (!prayerTimes) {
+      return;
+    }
+    
+    // Check if PrayerTimesCalculator is available
+    if (typeof PrayerTimesCalculator === 'undefined') {
+      console.error('PrayerTimesCalculator is not defined! Cannot update badge.');
+      return;
+    }
+    
+    const nextPrayerInfo = PrayerTimesCalculator.getNextPrayer(prayerTimes);
+    
+    if (nextPrayerInfo && nextPrayerInfo.name) {
+      // Shorten prayer names for badge (max 4 chars recommended)
+      const shortNames = {
+        'Subuh': 'SBH',
+        'Zohor': 'ZHR',
+        'Asar': 'ASR',
+        'Maghrib': 'MGR',
+        'Isha': 'ISA'
+      };
+      
+      const badgeText = shortNames[nextPrayerInfo.name] || nextPrayerInfo.name.substring(0, 3);
+      
+      // Set badge text to shortened prayer name
+      browser.browserAction.setBadgeText({ text: badgeText });
+      
+      // Set badge background color
+      browser.browserAction.setBadgeBackgroundColor({ color: '#667eea' });
+    }
+  } catch (error) {
+    console.error('Error updating badge text:', error);
   }
 }
 
@@ -92,6 +230,9 @@ async function checkNextPrayer() {
         minute: '2-digit', 
         hour12: false 
       });
+      
+      // Update badge with next prayer
+      updateBadgeText(result.prayerTimes);
       
       // Check all prayer times
       const times = result.prayerTimes;
@@ -541,3 +682,34 @@ browser.runtime.onInstalled.addListener(() => {
   updatePrayerTimes();
   scheduleMiddnightReset();
 });
+
+// Initialize on extension startup
+browser.runtime.onStartup.addListener(async () => {
+  console.log('Prayer Times extension started');
+  
+  // Load prayer times from storage and update badge
+  const result = await browser.storage.local.get('prayerTimes');
+  if (result.prayerTimes) {
+    updateBadgeText(result.prayerTimes);
+  }
+  
+  scheduleMiddnightReset();
+});
+
+// Initialize badge immediately when script loads
+(async function initializeBadge() {
+  try {
+    const result = await browser.storage.local.get('prayerTimes');
+    
+    if (result.prayerTimes) {
+      updateBadgeText(result.prayerTimes);
+      console.log('Badge initialized on load');
+    } else {
+      console.log('No prayer times in storage yet - fetching...');
+      // Trigger initial update
+      await updatePrayerTimes();
+    }
+  } catch (error) {
+    console.error('Error initializing badge:', error);
+  }
+})();

@@ -196,3 +196,15 @@
 - **Extension Renamed**: Changed from "Prayer Times Terengganu" to "Prayer Times Malaysia"
   - Reflects support for all Malaysian locations
   - Updated description to highlight custom adzan/doa features
+
+## Version 3.0.2 - Icon Badge Enhancement
+- **Next Prayer Badge**: Added badge text on extension icon showing next prayer name
+  - Displays shortened prayer names: SBH (Subuh), ZHR (Zohor), ASR (Asar), MGR (Maghrib), ISA (Isha)
+  - Updates automatically every 10 seconds
+  - Purple badge background color (#667eea) for visibility
+  - Shows at a glance which prayer is coming next
+  - No need to open popup to check next prayer
+- Badge updates on extension startup and when prayer times are refreshed
+- Fixed importScripts issue by adding fallback PrayerTimesCalculator in background script
+- Badge always visible and updates dynamically as time progresses
+- Improves user experience with quick visual reference on browser toolbar
