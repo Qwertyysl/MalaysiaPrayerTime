@@ -168,3 +168,31 @@
   - Azan Jiharkah Munif Hijjaz
   - Azan Ustaz Asri Ibrahim [Rabbani]
 - Cleaned up all references across extension files
+
+## Version 3.0 - Major Customization Update 🎉
+- **BREAKING CHANGE**: Removed all hardcoded adzan audio files
+- **Custom Audio Upload**: Users can now upload their own adzan sound files
+- **Custom Doa Upload**: Users can upload their own doa audio files
+- **Optional Doa Playback**: Added checkbox to enable/disable doa after adzan
+- **Location Selection**: Full JAKIM zone support for all Malaysian states
+  - Removed hardcoded Kuala Terengganu location
+  - Added dropdown with all JAKIM zones (jhr01-jhr04, kdh01-kdh07, etc.)
+  - Default location: TRG01 (Kuala Terengganu, Marang)
+  - User's location selection is saved and remembered
+- **Audio Storage**: Files converted to base64 and stored in browser storage
+- **Validation**: Error messages if user enables adzan/doa without uploading files
+- **Prayer Times**: Automatically updates when location changes
+- Complete customization for all Malaysian users across all states
+- Enhanced user control over audio and location preferences
+
+## Version 3.0.1 - UI/UX Improvements
+- **Location Display**: Added location code display next to "Prayer Times" in popup
+  - Shows selected zone code (e.g., TRG01, WLP01, etc.)
+  - Helps users quickly identify which location is active
+- **Settings Page Enhancement**: Moved status messages to top of settings page
+  - Error and success messages now appear immediately below page title
+  - More visible and easier to notice for users
+  - No need to scroll down to see status messages
+- **Extension Renamed**: Changed from "Prayer Times Terengganu" to "Prayer Times Malaysia"
+  - Reflects support for all Malaysian locations
+  - Updated description to highlight custom adzan/doa features

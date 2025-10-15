@@ -46,8 +46,12 @@ document.addEventListener('DOMContentLoaded', function() {
     maghribTimeElement.textContent = 'Loading...';
     ishaTimeElement.textContent = 'Loading...';
     
-    // Get prayer times from storage
-    browser.storage.local.get(['prayerTimes']).then((result) => {
+    // Get prayer times and location from storage
+    browser.storage.local.get(['prayerTimes', 'selectedLocation']).then((result) => {
+      // Display location code
+      if (result.selectedLocation) {
+        document.getElementById('location-code').textContent = `(${result.selectedLocation.toUpperCase()})`;
+      }
       console.log('Retrieved from storage:', result);
       
       if (result.prayerTimes) {

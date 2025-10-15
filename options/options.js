@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load saved settings
   loadSettings();
   
+  // Load locations from JAKIM API
+  loadLocations();
+  
   // Set up form submission
   const form = document.getElementById('settings-form');
   form.addEventListener('submit', function(e) {
@@ -57,21 +60,53 @@ document.addEventListener('DOMContentLoaded', function() {
       testSection.style.display = 'none';
     }
   });
+  
+  // Set up file input handlers
+  const adzanFileInput = document.getElementById('adzan-file');
+  const doaFileInput = document.getElementById('doa-file');
+  const enableDoaCheckbox = document.getElementById('enable-doa');
+  const doaFileGroup = document.getElementById('doa-file-group');
+  
+  adzanFileInput.addEventListener('change', handleAdzanFileSelect);
+  doaFileInput.addEventListener('change', handleDoaFileSelect);
+  
+  enableDoaCheckbox.addEventListener('change', function() {
+    doaFileGroup.style.display = this.checked ? 'block' : 'none';
+  });
 });
 
 // Load settings from storage
 function loadSettings() {
   browser.storage.local.get([
-    'adzanSound',
+    'selectedLocation',
+    'adzanFileName',
+    'doaFileName',
+    'enableDoa',
     'enableNotifications',
     'enableAthan',
     'muteTabsDuringAthan',
     'adzanVolume',
     'developerMode'
   ]).then((result) => {
-    // Set form values
-    document.getElementById('adzan-sound').value = 
-      result.adzanSound || 'Azan TV3.mp3'; // Set Azan TV3 as default
+    // Set location (will be set after locations are loaded)
+    if (result.selectedLocation) {
+      const locationSelect = document.getElementById('location-select');
+      locationSelect.value = result.selectedLocation;
+    }
+    
+    // Display file names if they exist
+    if (result.adzanFileName) {
+      document.getElementById('adzan-file-info').textContent = result.adzanFileName;
+    }
+    
+    if (result.doaFileName) {
+      document.getElementById('doa-file-info').textContent = result.doaFileName;
+    }
+    
+    // Set enable doa checkbox
+    const enableDoa = result.enableDoa || false;
+    document.getElementById('enable-doa').checked = enableDoa;
+    document.getElementById('doa-file-group').style.display = enableDoa ? 'block' : 'none';
       
     document.getElementById('enable-notifications').checked = 
       result.enableNotifications !== false; // Default to true
@@ -98,23 +133,48 @@ function loadSettings() {
 }
 
 // Save settings to storage
-function saveSettings() {
+async function saveSettings() {
+  const locationSelect = document.getElementById('location-select');
+  const selectedLocation = locationSelect.value || 'trg01'; // Default to TRG01 if not selected
+  
+  const enableAthan = document.getElementById('enable-athan').checked;
+  const enableDoa = document.getElementById('enable-doa').checked;
+  
+  // Check if audio files are uploaded when features are enabled
+  const storage = await browser.storage.local.get(['adzanFileData', 'doaFileData']);
+  
+  if (enableAthan && !storage.adzanFileData) {
+    showMessage('Please upload an adzan sound file before enabling adzan audio', 'error');
+    return;
+  }
+  
+  if (enableDoa && !storage.doaFileData) {
+    showMessage('Please upload a doa sound file before enabling doa playback', 'error');
+    return;
+  }
+  
   const settings = {
-    adzanSound: document.getElementById('adzan-sound').value,
+    selectedLocation: selectedLocation,
+    enableDoa: enableDoa,
     enableNotifications: document.getElementById('enable-notifications').checked,
-    enableAthan: document.getElementById('enable-athan').checked,
+    enableAthan: enableAthan,
     muteTabsDuringAthan: document.getElementById('mute-tabs-during-athan').checked,
     adzanVolume: parseInt(document.getElementById('adzan-volume').value),
     developerMode: document.getElementById('developer-mode').checked
   };
   
-  browser.storage.local.set(settings).then(() => {
+  try {
+    await browser.storage.local.set(settings);
+    
+    // Trigger prayer times update with new location
+    browser.runtime.sendMessage({ type: 'updatePrayerTimes' });
+    
     // Show success message
     showMessage('Settings saved successfully!', 'success');
-  }).catch((error) => {
+  } catch (error) {
     // Show error message
     showMessage('Error saving settings: ' + error.message, 'error');
-  });
+  }
 }
 
 // Show status message
@@ -128,6 +188,194 @@ function showMessage(text, type) {
   setTimeout(() => {
     messageElement.style.display = 'none';
   }, 3000);
+}
+
+// Load locations from JAKIM API zones
+async function loadLocations() {
+  const locationSelect = document.getElementById('location-select');
+  
+  // JAKIM zone codes grouped by state
+  const zones = {
+    'Johor': [
+      { code: 'jhr01', name: 'Pulau Aur dan Pulau Pemanggil' },
+      { code: 'jhr02', name: 'Johor Bahru, Kota Tinggi, Mersing' },
+      { code: 'jhr03', name: 'Kluang, Pontian' },
+      { code: 'jhr04', name: 'Batu Pahat, Muar, Segamat, Gemas' }
+    ],
+    'Kedah': [
+      { code: 'kdh01', name: 'Kota Setar, Kubang Pasu, Pokok Sena' },
+      { code: 'kdh02', name: 'Kuala Muda, Yan, Pendang' },
+      { code: 'kdh03', name: 'Padang Terap, Sik' },
+      { code: 'kdh04', name: 'Baling' },
+      { code: 'kdh05', name: 'Bandar Baharu, Kulim' },
+      { code: 'kdh06', name: 'Langkawi' },
+      { code: 'kdh07', name: 'Gunung Jerai' }
+    ],
+    'Kelantan': [
+      { code: 'ktn01', name: 'Kota Bharu, Bachok, Pasir Puteh, Tumpat' },
+      { code: 'ktn03', name: 'Jeli, Gua Musang (Mukim Galas, Bertam)' }
+    ],
+    'Melaka': [
+      { code: 'mlk01', name: 'Bandar Melaka, Alor Gajah, Jasin, Masjid Tanah, Merlimau, Nyalas' }
+    ],
+    'Negeri Sembilan': [
+      { code: 'ngs01', name: 'Tampin, Jempol' },
+      { code: 'ngs02', name: 'Port Dickson, Seremban, Kuala Pilah, Jelebu, Rembau' }
+    ],
+    'Pahang': [
+      { code: 'phg01', name: 'Pulau Tioman' },
+      { code: 'phg02', name: 'Kuantan, Pekan, Rompin, Muadzam Shah' },
+      { code: 'phg03', name: 'Jerantut, Temerloh, Maran, Bera, Chenor, Jengka' },
+      { code: 'phg04', name: 'Bentong, Lipis, Raub' },
+      { code: 'phg05', name: 'Genting Sempah, Janda Baik, Bukit Tinggi' },
+      { code: 'phg06', name: 'Cameron Highlands, Genting Highlands, Bukit Fraser' }
+    ],
+    'Perlis': [
+      { code: 'pls01', name: 'Kangar, Padang Besar, Arau' }
+    ],
+    'Pulau Pinang': [
+      { code: 'png01', name: 'Pulau Pinang' }
+    ],
+    'Perak': [
+      { code: 'prk01', name: 'Tapah, Slim River, Tanjung Malim' },
+      { code: 'prk02', name: 'Kuala Kangsar, Sg. Siput, Ipoh, Batu Gajah, Kampar' },
+      { code: 'prk03', name: 'Lenggong, Pengkalan Hulu, Grik' },
+      { code: 'prk04', name: 'Temengor, Belum' },
+      { code: 'prk05', name: 'Kg Gajah, Teluk Intan, Bagan Datuk, Seri Iskandar' },
+      { code: 'prk06', name: 'Selama, Taiping, Bagan Serai, Parit Buntar' },
+      { code: 'prk07', name: 'Bukit Larut' }
+    ],
+    'Sabah': [
+      { code: 'sbh01', name: 'Bahagian Sandakan (Timur), Bukit Garam, Semawang, Temanggong, Tambisan' },
+      { code: 'sbh02', name: 'Beluran, Telupid, Pinangah, Terusan, Kuamut, Bahagian Sandakan (Barat)' },
+      { code: 'sbh03', name: 'Lahad Datu, Silabukan, Kunak, Sahabat, Semporna, Tungku, Bahagian Tawau (Timur)' },
+      { code: 'sbh04', name: 'Bandar Tawau, Balong, Merotai, Kalabakan, Bahagian Tawau (Barat)' },
+      { code: 'sbh05', name: 'Kudat, Kota Marudu, Pitas, Pulau Banggi, Bahagian Kudat' },
+      { code: 'sbh06', name: 'Gunung Kinabalu' },
+      { code: 'sbh07', name: 'Kota Kinabalu, Ranau, Kota Belud, Tuaran, Penampang, Papar, Putatan, Bahagian Pantai Barat' },
+      { code: 'sbh08', name: 'Pensiangan, Keningau, Tambunan, Nabawan, Bahagian Pendalaman (Atas)' },
+      { code: 'sbh09', name: 'Beaufort, Kuala Penyu, Sipitang, Tenom, Long Pa Sia, Membakut, Weston, Bahagian Pendalaman (Bawah)' }
+    ],
+    'Sarawak': [
+      { code: 'swk01', name: 'Limbang, Lawas, Sundar, Trusan' },
+      { code: 'swk02', name: 'Miri, Niah, Bekenu, Sibuti, Marudi' },
+      { code: 'swk03', name: 'Pandan, Belaga, Suai, Tatau, Sebauh, Bintulu' },
+      { code: 'swk04', name: 'Sibu, Mukah, Dalat, Song, Igan, Oya, Balingian, Kanowit, Kapit' },
+      { code: 'swk05', name: 'Sarikei, Matu, Julau, Rajang, Daro, Bintangor, Belawai' },
+      { code: 'swk06', name: 'Lubok Antu, Sri Aman, Roban, Debak, Kabong, Lingga, Engkelili, Betong, Spaoh, Pusa, Saratok' },
+      { code: 'swk07', name: 'Serian, Simunjan, Samarahan, Sebuyau, Meludam' },
+      { code: 'swk08', name: 'Kuching, Bau, Lundu, Sematan' },
+      { code: 'swk09', name: 'Zon Khas (Kampung Patarikan)' }
+    ],
+    'Selangor': [
+      { code: 'sgr01', name: 'Gombak, Petaling, Sepang, Hulu Langat, Hulu Selangor, Rawang, S.Alam' },
+      { code: 'sgr02', name: 'Kuala Selangor, Sabak Bernam' },
+      { code: 'sgr03', name: 'Klang, Kuala Langat' }
+    ],
+    'Terengganu': [
+      { code: 'trg01', name: 'Kuala Terengganu, Marang' },
+      { code: 'trg02', name: 'Besut, Setiu' },
+      { code: 'trg03', name: 'Hulu Terengganu' },
+      { code: 'trg04', name: 'Dungun, Kemaman' }
+    ],
+    'WP Kuala Lumpur': [
+      { code: 'wlp01', name: 'Kuala Lumpur' }
+    ],
+    'WP Labuan': [
+      { code: 'wlp02', name: 'Labuan' }
+    ],
+    'WP Putrajaya': [
+      { code: 'wlp03', name: 'Putrajaya' }
+    ]
+  };
+  
+  // Clear loading option
+  locationSelect.innerHTML = '';
+  
+  // Add locations grouped by state
+  Object.keys(zones).sort().forEach(state => {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = state;
+    
+    zones[state].forEach(zone => {
+      const option = document.createElement('option');
+      option.value = zone.code;
+      option.textContent = `${zone.name} (${zone.code.toUpperCase()})`;
+      optgroup.appendChild(option);
+    });
+    
+    locationSelect.appendChild(optgroup);
+  });
+  
+  // Load saved location or set default to TRG01
+  const result = await browser.storage.local.get('selectedLocation');
+  if (result.selectedLocation) {
+    locationSelect.value = result.selectedLocation;
+  } else {
+    // Set default to TRG01 (Kuala Terengganu)
+    locationSelect.value = 'trg01';
+    await browser.storage.local.set({ selectedLocation: 'trg01' });
+  }
+}
+
+// Handle adzan file selection
+async function handleAdzanFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  try {
+    // Convert file to base64
+    const base64 = await fileToBase64(file);
+    
+    // Save to storage
+    await browser.storage.local.set({
+      adzanFileData: base64,
+      adzanFileName: file.name,
+      adzanFileType: file.type
+    });
+    
+    // Update UI
+    document.getElementById('adzan-file-info').textContent = file.name;
+    showMessage('Adzan file uploaded successfully!', 'success');
+  } catch (error) {
+    console.error('Error uploading adzan file:', error);
+    showMessage('Error uploading adzan file: ' + error.message, 'error');
+  }
+}
+
+// Handle doa file selection
+async function handleDoaFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  try {
+    // Convert file to base64
+    const base64 = await fileToBase64(file);
+    
+    // Save to storage
+    await browser.storage.local.set({
+      doaFileData: base64,
+      doaFileName: file.name,
+      doaFileType: file.type
+    });
+    
+    // Update UI
+    document.getElementById('doa-file-info').textContent = file.name;
+    showMessage('Doa file uploaded successfully!', 'success');
+  } catch (error) {
+    console.error('Error uploading doa file:', error);
+    showMessage('Error uploading doa file: ' + error.message, 'error');
+  }
+}
+
+// Convert file to base64
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 // Global variables for adzan test
@@ -202,17 +450,18 @@ async function playAdzanSound() {
   try {
     // Get settings from storage
     const result = await browser.storage.local.get([
-      'adzanSound', 
+      'adzanFileData',
       'adzanVolume', 
       'muteTabsDuringAthan'
     ]);
     
-    const adzanSound = result.adzanSound || 'Azan TV3.mp3'; // Set Azan TV3 as default
     const adzanVolume = result.adzanVolume !== undefined ? result.adzanVolume : 100;
     const muteTabs = result.muteTabsDuringAthan || false;
+    const adzanFileData = result.adzanFileData;
     
-    // Skip if adzan is disabled or set to none
-    if (adzanSound === 'none') {
+    // Check if adzan file is uploaded
+    if (!adzanFileData) {
+      showMessage('Please upload an adzan sound file first', 'error');
       finishTestAdzan();
       return;
     }
@@ -222,18 +471,8 @@ async function playAdzanSound() {
       await muteAudioTabsForTest();
     }
     
-    // Map adzan sound to actual file
-    const soundMap = {
-      'default': 'audio/athan.mp3',
-      'Azan Jiharkah Munif Hijjaz.mp3': 'audio/Azan Jiharkah Munif Hijjaz.mp3',
-      'Azan TV3.mp3': 'audio/Azan TV3.mp3',
-      'Azan Ustaz Asri Ibrahim [Rabbani].mp3': 'audio/Azan Ustaz Asri Ibrahim [Rabbani].mp3'
-    };
-    
-    const soundFile = soundMap[adzanSound] || soundMap['Azan TV3.mp3']; // Set Azan TV3 as fallback default
-    
-    // Create audio element and play
-    testAudio = new Audio(browser.runtime.getURL(soundFile));
+    // Create audio element from base64 data
+    testAudio = new Audio(adzanFileData);
     
     // Set volume (convert percentage to 0.0-6.0 range for up to 600% boost)
     try {

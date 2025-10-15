@@ -8,15 +8,32 @@
   <div class="container">
     <h1>Prayer Times Settings</h1>
     
+    <div id="status-message"></div>
+    
     <form id="settings-form">
       <div class="form-group">
-        <label for="adzan-sound">Adzan Sound:</label>
-        <select id="adzan-sound">
-          <option value="Azan TV3.mp3">Azan TV3 (default)</option>
-          <option value="Azan Jiharkah Munif Hijjaz.mp3">Azan Jiharkah Munif Hijjaz</option>
-          <option value="Azan Ustaz Asri Ibrahim [Rabbani].mp3">Azan Ustaz Asri Ibrahim [Rabbani]</option>
-          <option value="none">None (silent)</option>
+        <label for="location-select">Location (JAKIM Zone):</label>
+        <select id="location-select">
+          <option value="trg01">Kuala Terengganu, Marang (TRG01)</option>
         </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="adzan-file">Adzan Sound File:</label>
+        <input type="file" id="adzan-file" accept="audio/*">
+        <div class="file-info" id="adzan-file-info">No file selected</div>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="enable-doa"> Play Doa after Adzan
+        </label>
+      </div>
+      
+      <div class="form-group" id="doa-file-group" style="display: none;">
+        <label for="doa-file">Doa Sound File:</label>
+        <input type="file" id="doa-file" accept="audio/*">
+        <div class="file-info" id="doa-file-info">No file selected</div>
       </div>
       
       <div class="form-group">
@@ -62,8 +79,6 @@
       <button id="stop-adzan-btn" style="display: none;">Stop Adzan</button>
       <div id="countdown-display"></div>
     </div>
-    
-    <div id="status-message"></div>
     
     <div class="footer">
       Made with ❤️ by Nazmi

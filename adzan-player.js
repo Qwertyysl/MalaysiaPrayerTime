@@ -9,29 +9,29 @@ let countdownInterval = null;
 
 // Parse URL parameters
 const urlParams = new URLSearchParams(window.location.search);
-const adzanSound = urlParams.get('sound') || 'Azan TV3.mp3';
 const adzanVolume = parseInt(urlParams.get('volume')) || 100;
 const prayerName = urlParams.get('prayer') || 'Prayer';
+const enableDoa = urlParams.get('enableDoa') === 'true';
 
 // Update UI with prayer name
 document.getElementById('prayer-name').textContent = `${prayerName} Prayer`;
 
-// Map adzan sound to actual file
-const soundMap = {
-  'default': 'audio/athan.mp3',
-  'Azan Jiharkah Munif Hijjaz.mp3': 'audio/Azan Jiharkah Munif Hijjaz.mp3',
-  'Azan TV3.mp3': 'audio/Azan TV3.mp3',
-  'Azan Ustaz Asri Ibrahim [Rabbani].mp3': 'audio/Azan Ustaz Asri Ibrahim [Rabbani].mp3'
-};
-
-const soundFile = soundMap[adzanSound] || soundMap['Azan TV3.mp3'];
-const doaFile = 'audio/doa/RUJUKAN DAN HAFALAN_ DOA SELEPAS AZAN (JAWI & RUMI).mp3';
-
 // Initialize and play adzan
 async function playAdzan() {
   try {
-    // Create audio element
-    audio = new Audio(browser.runtime.getURL(soundFile));
+    // Get custom audio file from storage
+    const result = await browser.storage.local.get(['adzanFileData']);
+    
+    if (!result.adzanFileData) {
+      document.getElementById('status').textContent = 'No adzan file uploaded';
+      setTimeout(() => {
+        window.close();
+      }, 3000);
+      return;
+    }
+    
+    // Create audio element from base64 data
+    audio = new Audio(result.adzanFileData);
     audio.preload = 'auto';
     
     // Set volume with boosting if needed
@@ -70,8 +70,22 @@ async function playAdzan() {
         clearInterval(countdownInterval);
       }
       
-      // Play doa after adzan
-      playDoa();
+      // Play doa after adzan if enabled
+      if (enableDoa) {
+        playDoa();
+      } else {
+        console.log('Doa playback disabled');
+        document.getElementById('status').textContent = 'Completed';
+        document.getElementById('countdown').textContent = '00:00';
+        
+        // Notify background script that everything is finished
+        browser.runtime.sendMessage({ type: 'adzanFinished' });
+        
+        // Close tab after 3 seconds
+        setTimeout(() => {
+          window.close();
+        }, 3000);
+      }
     });
     
     // Handle audio error
@@ -214,6 +228,24 @@ async function playDoa() {
     document.getElementById('status').textContent = '🤲 Playing Doa';
     document.getElementById('prayer-name').textContent = 'Doa Selepas Azan';
     
+    // Get custom doa file from storage
+    const result = await browser.storage.local.get(['doaFileData']);
+    
+    if (!result.doaFileData) {
+      console.log('No doa file uploaded, skipping');
+      document.getElementById('status').textContent = 'Completed';
+      document.getElementById('countdown').textContent = '00:00';
+      
+      // Notify background script that everything is finished
+      browser.runtime.sendMessage({ type: 'adzanFinished' });
+      
+      // Close tab after 3 seconds
+      setTimeout(() => {
+        window.close();
+      }, 3000);
+      return;
+    }
+    
     // Change the audio source to doa (reuse existing audio element if using Web Audio API)
     if (sourceNode) {
       // If we're using Web Audio API, we need to disconnect and create new audio element
@@ -222,8 +254,8 @@ async function playDoa() {
         gainNode.disconnect();
       }
       
-      // Create new audio element for doa
-      audio = new Audio(browser.runtime.getURL(doaFile));
+      // Create new audio element for doa from base64 data
+      audio = new Audio(result.doaFileData);
       audio.preload = 'auto';
       
       // Recreate the audio graph with new source
@@ -238,8 +270,8 @@ async function playDoa() {
       
       audio.volume = 1.0;
     } else {
-      // Not using Web Audio API, just change the src
-      audio.src = browser.runtime.getURL(doaFile);
+      // Not using Web Audio API, just change the src to base64 data
+      audio.src = result.doaFileData;
       audio.load();
     }
     

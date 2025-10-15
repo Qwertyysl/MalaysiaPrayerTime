@@ -5,14 +5,15 @@
 // Export functions directly for easier importing
 const PrayerTimesCalculator = {
   /**
-   * Calculate prayer times for Kuala Terengganu using Aladhan API
+   * Calculate prayer times for selected location using JAKIM API
+   * @param {string} locationCode - JAKIM location code (e.g., 'trg01')
    * @returns {Promise<Object>} Prayer times
    */
-  getPrayerTimes: async function() {
+  getPrayerTimes: async function(locationCode = 'trg01') {
     try {
       // First try the original JAKIM API
       try {
-        const response = await fetch('https://api.waktusolat.app/v2/solat/trg01');
+        const response = await fetch(`https://api.waktusolat.app/v2/solat/${locationCode}`);
         
         if (!response.ok) {
           throw new Error(`JAKIM API request failed with status ${response.status}`);

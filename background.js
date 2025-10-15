@@ -46,8 +46,14 @@ async function updatePrayerTimes() {
   console.log('Updating prayer times from API...');
   
   try {
+    // Get selected location from storage
+    const result = await browser.storage.local.get('selectedLocation');
+    const locationCode = result.selectedLocation || 'trg01'; // Default to Kuala Terengganu
+    
+    console.log('Using location code:', locationCode);
+    
     // Get prayer times from API
-    const prayerTimes = await PrayerTimesCalculator.getPrayerTimes();
+    const prayerTimes = await PrayerTimesCalculator.getPrayerTimes(locationCode);
     
     // Save to storage
     await browser.storage.local.set({
@@ -74,9 +80,9 @@ async function checkNextPrayer() {
       'prayerTimes', 
       'enableNotifications', 
       'enableAthan',
-      'adzanSound',
       'muteTabsDuringAthan',
-      'adzanVolume'
+      'adzanVolume',
+      'enableDoa'
     ]);
     
     if (result.prayerTimes) {
@@ -173,9 +179,9 @@ async function checkNextPrayer() {
           if (result.enableAthan !== false) {
             playAdzanSound(
               result.muteTabsDuringAthan, 
-              result.adzanSound,
               result.adzanVolume,
-              currentPrayer.name
+              currentPrayer.name,
+              result.enableDoa
             );
           }
         }
@@ -294,21 +300,16 @@ let adzanTabId = null;
 let adzanStartTime = null;
 
 // Play adzan sound by opening a dedicated tab
-async function playAdzanSound(muteTabs = false, adzanSound = 'Azan TV3.mp3', adzanVolume = 100, prayerName = '') {
+async function playAdzanSound(muteTabs = false, adzanVolume = 100, prayerName = '', enableDoa = false) {
   try {
     console.log('Starting adzan playback...');
-    
-    // Skip if adzan is disabled or set to none
-    if (adzanSound === 'none') {
-      return;
-    }
     
     // Store adzan start time
     adzanStartTime = Date.now();
     
     // Create adzan player HTML page
     const adzanPlayerUrl = browser.runtime.getURL('adzan-player.html') + 
-      `?sound=${encodeURIComponent(adzanSound)}&volume=${adzanVolume}&prayer=${encodeURIComponent(prayerName)}`;
+      `?volume=${adzanVolume}&prayer=${encodeURIComponent(prayerName)}&enableDoa=${enableDoa}`;
     
     // Open adzan player in a new tab
     const tab = await browser.tabs.create({
@@ -434,6 +435,9 @@ browser.runtime.onMessage.addListener((message, sender) => {
     });
   } else if (message.type === 'stopAdzan') {
     stopAdzan();
+  } else if (message.type === 'updatePrayerTimes') {
+    // Update prayer times when location changes
+    updatePrayerTimes();
   }
 });
 

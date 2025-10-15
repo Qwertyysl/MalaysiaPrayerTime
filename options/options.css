@@ -41,7 +41,7 @@ label {
   color: #34495e;
 }
 
-select, input[type="text"] {
+select, input[type="text"], input[type="file"] {
   width: 100%;
   padding: 12px;
   border: 1px solid #ddd;
@@ -51,10 +51,20 @@ select, input[type="text"] {
   transition: border-color 0.3s;
 }
 
-select:focus, input[type="text"]:focus {
+select:focus, input[type="text"]:focus, input[type="file"]:focus {
   border-color: #667eea;
   outline: none;
   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.file-info {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
 }
 
 input[type="checkbox"] {
@@ -192,7 +202,7 @@ button:disabled {
 }
 
 #status-message {
-  margin-top: 20px;
+  margin-bottom: 20px;
   padding: 15px;
   border-radius: 8px;
   text-align: center;
