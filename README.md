@@ -32,6 +32,12 @@ A Firefox extension that displays accurate Islamic prayer times for **all Malays
 - **Stop Button**: Manual control to stop adzan anytime
 - **Countdown Timer**: Real-time countdown display during playback
 
+## ⚠️ A Note on Built-in Audio
+
+### Why is there no built-in Adzan sound?
+
+To comply with Mozilla's add-on policies and navigate technical limitations, this extension does not include pre-packaged audio files. This approach ensures the extension remains compliant and lightweight. Instead, it empowers users with the flexibility to upload their own preferred Adzan and Doa audio, giving you full control over the experience.
+
 ## 📥 Installation
 
 ### Method 1: From XPI File (Recommended)
