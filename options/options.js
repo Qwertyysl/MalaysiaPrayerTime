@@ -4,6 +4,9 @@
 let audioContext = null;
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Load saved theme
+  loadTheme();
+  
   // Load saved settings
   loadSettings();
   
@@ -36,6 +39,17 @@ document.addEventListener('DOMContentLoaded', function() {
       // Open changelog in a new tab
       browser.tabs.create({
         url: browser.runtime.getURL('changelog.txt')
+      });
+    });
+  }
+  
+  // Set up feedback button
+  const feedbackBtn = document.getElementById('feedback-btn');
+  if (feedbackBtn) {
+    feedbackBtn.addEventListener('click', function() {
+      // Open Telegram link in a new tab
+      browser.tabs.create({
+        url: 'https://t.me/mnxzmi98'
       });
     });
   }
@@ -73,6 +87,30 @@ document.addEventListener('DOMContentLoaded', function() {
   enableDoaCheckbox.addEventListener('change', function() {
     doaFileGroup.style.display = this.checked ? 'block' : 'none';
   });
+  
+  // Set up change file buttons
+  const changeAdzanBtn = document.getElementById('change-adzan-btn');
+  const changeDoaBtn = document.getElementById('change-doa-btn');
+  
+  changeAdzanBtn.addEventListener('click', function() {
+    adzanFileInput.click();
+  });
+  
+  changeDoaBtn.addEventListener('click', function() {
+    doaFileInput.click();
+  });
+});
+
+// Listen for storage changes to sync theme across pages
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.darkMode) {
+    const darkMode = changes.darkMode.newValue;
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }
 });
 
 // Load settings from storage
@@ -83,6 +121,7 @@ function loadSettings() {
     'doaFileName',
     'enableDoa',
     'enableNotifications',
+    'enableBadge',
     'enableAthan',
     'muteTabsDuringAthan',
     'adzanVolume',
@@ -94,13 +133,17 @@ function loadSettings() {
       locationSelect.value = result.selectedLocation;
     }
     
-    // Display file names if they exist
+    // Display file names if they exist and hide/show file pickers
     if (result.adzanFileName) {
       document.getElementById('adzan-file-info').textContent = result.adzanFileName;
+      document.getElementById('adzan-file').style.display = 'none';
+      document.getElementById('change-adzan-btn').style.display = 'inline-block';
     }
     
     if (result.doaFileName) {
       document.getElementById('doa-file-info').textContent = result.doaFileName;
+      document.getElementById('doa-file').style.display = 'none';
+      document.getElementById('change-doa-btn').style.display = 'inline-block';
     }
     
     // Set enable doa checkbox
@@ -111,8 +154,11 @@ function loadSettings() {
     document.getElementById('enable-notifications').checked = 
       result.enableNotifications !== false; // Default to true
       
+    document.getElementById('enable-badge').checked = 
+      result.enableBadge || false; // Default to false (off)
+      
     document.getElementById('enable-athan').checked = 
-      result.enableAthan !== false; // Default to true
+      result.enableAthan || false; // Default to false (unchecked)
       
     document.getElementById('mute-tabs-during-athan').checked = 
       result.muteTabsDuringAthan || false;
@@ -157,6 +203,7 @@ async function saveSettings() {
     selectedLocation: selectedLocation,
     enableDoa: enableDoa,
     enableNotifications: document.getElementById('enable-notifications').checked,
+    enableBadge: document.getElementById('enable-badge').checked,
     enableAthan: enableAthan,
     muteTabsDuringAthan: document.getElementById('mute-tabs-during-athan').checked,
     adzanVolume: parseInt(document.getElementById('adzan-volume').value),
@@ -334,8 +381,10 @@ async function handleAdzanFileSelect(event) {
       adzanFileType: file.type
     });
     
-    // Update UI
+    // Update UI - hide file picker and show change button
     document.getElementById('adzan-file-info').textContent = file.name;
+    document.getElementById('adzan-file').style.display = 'none';
+    document.getElementById('change-adzan-btn').style.display = 'inline-block';
     showMessage('Adzan file uploaded successfully!', 'success');
   } catch (error) {
     console.error('Error uploading adzan file:', error);
@@ -359,8 +408,10 @@ async function handleDoaFileSelect(event) {
       doaFileType: file.type
     });
     
-    // Update UI
+    // Update UI - hide file picker and show change button
     document.getElementById('doa-file-info').textContent = file.name;
+    document.getElementById('doa-file').style.display = 'none';
+    document.getElementById('change-doa-btn').style.display = 'inline-block';
     showMessage('Doa file uploaded successfully!', 'success');
   } catch (error) {
     console.error('Error uploading doa file:', error);
@@ -621,4 +672,20 @@ function finishTestAdzan() {
   
   // Clear audio reference
   testAudio = null;
+}
+
+// Load theme from storage
+async function loadTheme() {
+  try {
+    const result = await browser.storage.local.get('darkMode');
+    const darkMode = result.darkMode || false;
+    
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  } catch (error) {
+    console.error('Error loading theme:', error);
+  }
 }

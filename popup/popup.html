@@ -56,8 +56,13 @@
       <p>Next prayer: <span id="next-prayer-name">--</span> at <span id="next-prayer-time">--:--</span></p>
       <p>Time remaining: <span id="countdown">--:--</span></p>
     </div>
-    <button id="refresh-btn">Refresh</button>
-    <button id="settings-btn">Settings</button>
+    <div class="button-row">
+      <button id="refresh-btn">Refresh</button>
+      <button id="settings-btn">Settings</button>
+      <button type="button" id="theme-toggle" class="theme-toggle" title="Toggle Dark/Light Mode">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
   </div>
   <script src="../utils/prayer-times.js"></script>
   <script src="popup.js"></script>

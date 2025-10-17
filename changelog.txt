@@ -208,3 +208,59 @@
 - Fixed importScripts issue by adding fallback PrayerTimesCalculator in background script
 - Badge always visible and updates dynamically as time progresses
 - Improves user experience with quick visual reference on browser toolbar
+
+## Version 3.1 - UX & Customization Enhancements 🎨
+- **Enable Adzan Audio**: Now unchecked by default
+  - Users must upload audio file before enabling
+  - Prevents errors from missing audio files
+- **File Upload UI**: Enhanced file picker experience
+  - File picker hides after successful upload
+  - "Change Adzan File" and "Change Doa File" buttons appear after upload
+  - Cleaner interface with better visual feedback
+- **Badge Toggle**: Added option to enable/disable badge display
+  - New checkbox: "Enable Badge (Show next prayer on icon)"
+  - Off by default - users can opt-in
+  - Gives users control over toolbar icon appearance
+- **Save Notification**: Moved above Save button
+  - Better UX - notification visible without scrolling
+  - Immediate feedback when saving settings
+- **Terminology Update**: Replaced "Athan" with "Adzan" throughout
+  - Consistent terminology across all UI elements
+  - Updated labels, buttons, and messages
+- **Feedback Link**: Added "Leave me Feedback" button
+  - Direct link to developer's Telegram: @mnxzmi98
+  - Easy way for users to provide feedback
+- **Refresh Frequency**: Changed "every 10 seconds" to "refresh frequently"
+  - More user-friendly language in documentation
+  - Updated README and code comments
+- **Logging Optimization**: Reduced console spam
+  - Removed excessive debug logs
+  - Kept only essential error logging
+  - Cleaner browser console
+- **Dark/Light Mode**: Added theme toggle with emojis
+  - Toggle button with 🌙 (dark mode) and ☀️ (light mode) emojis
+  - Located in popup for easy access
+  - Real-time synchronization: changes instantly apply to both popup and settings
+  - Professional dark mode with muted, subtle colors:
+    - Dark slate backgrounds (#2d3e50, #34495e)
+    - Light blue accents (#64b5f6) for important text
+    - Muted button colors (dark gray-blue, dark mauve, muted red)
+    - High contrast text (#e0e0e0, #ffffff) for excellent readability
+    - All buttons have appropriate text colors in dark mode
+    - Success messages: light green on dark green background
+    - Error messages: light pink on dark red background
+    - Warning messages: light orange on muted brown background
+  - Complete dark mode styling for ALL elements:
+    - Backgrounds, text, tables, buttons
+    - Input fields, sliders, checkboxes
+    - Notifications, warnings, success/error messages
+    - Gradients, borders, and shadows
+    - Next prayer section with clear visibility
+    - Countdown timer with light blue color
+  - Smooth transitions between themes
+  - Theme preference saved and persisted
+  - Beautiful hover effects on toggle button
+- **Settings Persistence**: All user selections now properly saved
+  - Location, audio files, all checkboxes, volume, and theme
+  - Settings persist across browser sessions
+  - Improved reliability of preference storage

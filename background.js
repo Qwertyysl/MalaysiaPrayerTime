@@ -3,16 +3,12 @@
 // Import prayer times calculator
 try {
   importScripts('utils/prayer-times.js');
-  console.log('Prayer times calculator imported successfully');
-  console.log('PrayerTimesCalculator available:', typeof PrayerTimesCalculator !== 'undefined');
 } catch (e) {
   console.error('Failed to import prayer times calculator:', e);
-  console.error('Error details:', e.message, e.stack);
 }
 
 // Fallback: Define getNextPrayer function directly if import fails
 if (typeof PrayerTimesCalculator === 'undefined') {
-  console.log('Creating PrayerTimesCalculator fallback...');
   var PrayerTimesCalculator = {
     getNextPrayer: function(prayerTimes) {
       const now = new Date();
@@ -101,7 +97,6 @@ if (typeof PrayerTimesCalculator === 'undefined') {
       };
     }
   };
-  console.log('PrayerTimesCalculator fallback created');
 }
 
 // Persistent AudioContext for volume boosting
@@ -115,9 +110,9 @@ browser.alarms.create('updatePrayerTimes', {
   periodInMinutes: 60 // Update every hour for real-time accuracy
 });
 
-// Set up alarm to check for next prayer every 10 seconds for better accuracy
+// Set up alarm to check for next prayer frequently for better accuracy
 browser.alarms.create('checkNextPrayer', {
-  periodInMinutes: 1/6 // Check every 10 seconds (1/6 of a minute)
+  periodInMinutes: 1/6 // Check frequently (every 10 seconds)
 });
 
 // Set up alarm to check for minute warnings every minute
@@ -140,14 +135,10 @@ browser.alarms.onAlarm.addListener((alarm) => {
 
 // Update prayer times from API
 async function updatePrayerTimes() {
-  console.log('Updating prayer times from API...');
-  
   try {
     // Get selected location from storage
     const result = await browser.storage.local.get('selectedLocation');
     const locationCode = result.selectedLocation || 'trg01'; // Default to Kuala Terengganu
-    
-    console.log('Using location code:', locationCode);
     
     // Get prayer times from API
     const prayerTimes = await PrayerTimesCalculator.getPrayerTimes(locationCode);
@@ -158,8 +149,6 @@ async function updatePrayerTimes() {
       lastUpdated: new Date().toISOString()
     });
     
-    console.log('Prayer times updated:', prayerTimes);
-    
     // Update badge with next prayer
     updateBadgeText(prayerTimes);
   } catch (error) {
@@ -168,8 +157,18 @@ async function updatePrayerTimes() {
 }
 
 // Update badge text with next prayer name
-function updateBadgeText(prayerTimes) {
+async function updateBadgeText(prayerTimes) {
   try {
+    // Check if badge is enabled
+    const result = await browser.storage.local.get('enableBadge');
+    const enableBadge = result.enableBadge || false;
+    
+    if (!enableBadge) {
+      // Clear badge if disabled
+      browser.browserAction.setBadgeText({ text: '' });
+      return;
+    }
+    
     if (!prayerTimes) {
       return;
     }
@@ -210,7 +209,6 @@ async function checkNextPrayer() {
   try {
     // Don't trigger new adzan if one is already playing
     if (adzanTabId !== null) {
-      console.log('Adzan already playing, skipping check');
       return;
     }
     
@@ -288,11 +286,6 @@ async function checkNextPrayer() {
         const currentMinute = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
         const prayerKey = `${currentPrayer.name}-${currentMinute}`;
         
-        console.log(`Prayer time matched: ${currentPrayer.name} at ${currentMinute}`);
-        console.log(`Prayer key: ${prayerKey}`);
-        console.log(`Already triggered: ${triggeredPrayers.has(prayerKey)}`);
-        console.log(`Enable Athan: ${result.enableAthan}`);
-        
         // Check if we've already triggered this prayer in this minute
         if (!triggeredPrayers.has(prayerKey)) {
           // Mark this prayer as triggered for this minute
@@ -303,8 +296,6 @@ async function checkNextPrayer() {
             const entries = Array.from(triggeredPrayers);
             triggeredPrayers.delete(entries[0]);
           }
-          
-          console.log(`Triggering adzan for ${currentPrayer.name} at ${currentMinute}`);
           
           // Show notification if enabled
           if (result.enableNotifications !== false) {
@@ -317,7 +308,7 @@ async function checkNextPrayer() {
           }
           
           // Play adzan sound if enabled
-          if (result.enableAthan !== false) {
+          if (result.enableAthan === true) {
             playAdzanSound(
               result.muteTabsDuringAthan, 
               result.adzanVolume,
@@ -420,8 +411,6 @@ async function checkMinuteWarnings() {
               title: 'Prayer Time Reminder',
               message: `${upcomingPrayer.name} prayer in ${minutes} minute${minutes > 1 ? 's' : ''}`
             });
-            
-            console.log(`${minutes}-minute warning for ${upcomingPrayer.name}`);
           }
         }
       }
@@ -443,8 +432,6 @@ let adzanStartTime = null;
 // Play adzan sound by opening a dedicated tab
 async function playAdzanSound(muteTabs = false, adzanVolume = 100, prayerName = '', enableDoa = false) {
   try {
-    console.log('Starting adzan playback...');
-    
     // Store adzan start time
     adzanStartTime = Date.now();
     
@@ -459,18 +446,15 @@ async function playAdzanSound(muteTabs = false, adzanVolume = 100, prayerName = 
     });
     
     adzanTabId = tab.id;
-    console.log('Adzan player tab opened:', adzanTabId);
     
     // Pause media in tabs if requested (after creating adzan tab)
     if (muteTabs) {
       try {
-        console.log('Pausing media in tabs...');
         const tabs = await browser.tabs.query({});
         
         for (const currentTab of tabs) {
           // Skip the adzan tab itself
           if (currentTab.id === adzanTabId) {
-            console.log(`Skipping adzan tab ${currentTab.id}`);
             continue;
           }
           
@@ -500,12 +484,10 @@ async function playAdzanSound(muteTabs = false, adzanVolume = 100, prayerName = 
             }
             
             pausedTabs.push(currentTab.id);
-            console.log(`Paused media in tab ${currentTab.id}`);
           } catch (tabError) {
-            console.warn(`Could not pause media in tab ${currentTab.id}:`, tabError);
+            // Silently handle tab errors
           }
         }
-        console.log(`Paused media in ${pausedTabs.length} tabs during adzan`);
       } catch (pauseError) {
         console.error('Error pausing media in tabs:', pauseError);
       }
@@ -521,15 +503,12 @@ async function playAdzanSound(muteTabs = false, adzanVolume = 100, prayerName = 
 // Stop adzan playback
 async function stopAdzan() {
   try {
-    console.log('Stopping adzan...');
-    
     // Close adzan tab if open
     if (adzanTabId) {
       try {
         await browser.tabs.remove(adzanTabId);
-        console.log('Adzan tab closed');
       } catch (tabError) {
-        console.warn('Could not close adzan tab:', tabError);
+        // Silently handle tab errors
       }
       adzanTabId = null;
     }
@@ -556,7 +535,6 @@ let adzanTotalDuration = 0;
 // Listen for messages from adzan player
 browser.runtime.onMessage.addListener((message, sender) => {
   if (message.type === 'adzanFinished') {
-    console.log('Adzan finished playing');
     adzanTabId = null;
     adzanStartTime = null;
     adzanTotalDuration = 0;
@@ -565,7 +543,6 @@ browser.runtime.onMessage.addListener((message, sender) => {
     // Store the total duration and reset start time when adzan/doa starts
     adzanTotalDuration = message.duration || 0;
     adzanStartTime = Date.now(); // Reset start time for accurate countdown
-    console.log('Adzan/Doa started with duration:', adzanTotalDuration);
   } else if (message.type === 'getAdzanStatus') {
     // Return adzan status to popup
     return Promise.resolve({
@@ -585,8 +562,6 @@ browser.runtime.onMessage.addListener((message, sender) => {
 // Unpause media and unmute tabs
 async function unpauseMediaAndUnmuteTabs() {
   try {
-    console.log('Unpausing media and unmuting tabs...');
-    
     // Unpause media in all paused tabs
     for (const tabId of pausedTabs) {
       try {
@@ -606,9 +581,8 @@ async function unpauseMediaAndUnmuteTabs() {
             })();
           `
         });
-        console.log(`Unpaused media in tab ${tabId}`);
       } catch (tabError) {
-        console.warn(`Could not unpause media in tab ${tabId}:`, tabError);
+        // Silently handle tab errors
       }
     }
     
@@ -644,16 +618,13 @@ async function unmuteTabsAfterDelay() {
 // Unmute previously muted tabs
 async function unmuteTabs(tabIds) {
   try {
-    console.log('Unmuting tabs...');
     for (const tabId of tabIds) {
       try {
         await browser.tabs.update(tabId, { muted: false });
-        console.log(`Unmuted tab ${tabId}`);
       } catch (tabError) {
-        console.warn(`Could not unmute tab ${tabId}:`, tabError);
+        // Silently handle tab errors
       }
     }
-    console.log(`Unmuted ${tabIds.length} tabs after adzan`);
   } catch (unmuteError) {
     console.error('Error unmuting tabs:', unmuteError);
   }
@@ -669,7 +640,6 @@ function scheduleMiddnightReset() {
   const msUntilMidnight = tomorrow.getTime() - now.getTime();
   
   setTimeout(() => {
-    console.log('Midnight reset - clearing triggered prayers');
     triggeredPrayers.clear();
     // Schedule next midnight reset
     scheduleMiddnightReset();
@@ -678,14 +648,12 @@ function scheduleMiddnightReset() {
 
 // Initialize on extension install
 browser.runtime.onInstalled.addListener(() => {
-  console.log('Prayer Times extension installed');
   updatePrayerTimes();
   scheduleMiddnightReset();
 });
 
 // Initialize on extension startup
 browser.runtime.onStartup.addListener(async () => {
-  console.log('Prayer Times extension started');
   
   // Load prayer times from storage and update badge
   const result = await browser.storage.local.get('prayerTimes');
@@ -703,9 +671,7 @@ browser.runtime.onStartup.addListener(async () => {
     
     if (result.prayerTimes) {
       updateBadgeText(result.prayerTimes);
-      console.log('Badge initialized on load');
     } else {
-      console.log('No prayer times in storage yet - fetching...');
       // Trigger initial update
       await updatePrayerTimes();
     }

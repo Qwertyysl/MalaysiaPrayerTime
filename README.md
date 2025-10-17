@@ -149,9 +149,9 @@ All JAKIM zones across Malaysia:
 
 ### Background Tasks
 - **Prayer Time Updates**: Every hour
-- **Prayer Checks**: Every 10 seconds for accuracy
+- **Prayer Checks**: Refresh frequently for accuracy
 - **Warning Checks**: Every minute for advance notifications
-- **Badge Updates**: Every 10 seconds
+- **Badge Updates**: Refresh frequently
 
 ## 🔧 Development
 

@@ -8,8 +8,6 @@
   <div class="container">
     <h1>Prayer Times Settings</h1>
     
-    <div id="status-message"></div>
-    
     <form id="settings-form">
       <div class="form-group">
         <label for="location-select">Location (JAKIM Zone):</label>
@@ -22,6 +20,7 @@
         <label for="adzan-file">Adzan Sound File:</label>
         <input type="file" id="adzan-file" accept="audio/*">
         <div class="file-info" id="adzan-file-info">No file selected</div>
+        <button type="button" id="change-adzan-btn" class="change-file-btn" style="display: none;">Change Adzan File</button>
       </div>
       
       <div class="form-group">
@@ -34,6 +33,7 @@
         <label for="doa-file">Doa Sound File:</label>
         <input type="file" id="doa-file" accept="audio/*">
         <div class="file-info" id="doa-file-info">No file selected</div>
+        <button type="button" id="change-doa-btn" class="change-file-btn" style="display: none;">Change Doa File</button>
       </div>
       
       <div class="form-group">
@@ -50,13 +50,19 @@
       
       <div class="form-group">
         <label class="checkbox-label">
-          <input type="checkbox" id="enable-athan"> Enable Athan Audio
+          <input type="checkbox" id="enable-badge"> Enable Badge (Show next prayer on icon)
         </label>
       </div>
       
       <div class="form-group">
         <label class="checkbox-label">
-          <input type="checkbox" id="mute-tabs-during-athan"> Mute other tabs during Athan
+          <input type="checkbox" id="enable-athan"> Enable Adzan Audio
+        </label>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="mute-tabs-during-athan"> Mute other tabs during Adzan
         </label>
       </div>
       
@@ -66,9 +72,12 @@
         </label>
       </div>
       
+      <div id="status-message"></div>
+      
       <div class="button-group">
         <button type="submit">Save Settings</button>
         <button type="button" id="changelog-btn" class="secondary-btn">View Changelog</button>
+        <button type="button" id="feedback-btn" class="secondary-btn">Leave me Feedback</button>
       </div>
     </form>
     

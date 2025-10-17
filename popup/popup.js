@@ -1,6 +1,9 @@
 // Prayer times popup script
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Load theme
+  loadTheme();
+  
   // Get DOM elements
   const subuhTimeElement = document.getElementById('subuh-time');
   const zohorTimeElement = document.getElementById('zohor-time');
@@ -34,6 +37,14 @@ document.addEventListener('DOMContentLoaded', function() {
   settingsButton.addEventListener('click', function() {
     browser.runtime.openOptionsPage();
   });
+  
+  // Theme toggle button event listener
+  const themeToggleBtn = document.getElementById('theme-toggle');
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', function() {
+      toggleTheme();
+    });
+  }
 
   // Update prayer times
   function updatePrayerTimes() {
@@ -341,3 +352,51 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initial update
   updatePrayerTimes();
 });
+
+// Listen for storage changes to sync theme across pages
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.darkMode) {
+    const darkMode = changes.darkMode.newValue;
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+      document.getElementById('theme-icon').textContent = '☀️';
+    } else {
+      document.body.classList.remove('dark-mode');
+      document.getElementById('theme-icon').textContent = '🌙';
+    }
+  }
+});
+
+// Load theme from storage
+async function loadTheme() {
+  try {
+    const result = await browser.storage.local.get('darkMode');
+    const darkMode = result.darkMode || false;
+    
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+      document.getElementById('theme-icon').textContent = '☀️';
+    } else {
+      document.body.classList.remove('dark-mode');
+      document.getElementById('theme-icon').textContent = '🌙';
+    }
+  } catch (error) {
+    console.error('Error loading theme:', error);
+  }
+}
+
+// Toggle theme
+async function toggleTheme() {
+  try {
+    const isDarkMode = document.body.classList.toggle('dark-mode');
+    
+    // Update icon
+    const themeIcon = document.getElementById('theme-icon');
+    themeIcon.textContent = isDarkMode ? '☀️' : '🌙';
+    
+    // Save preference
+    await browser.storage.local.set({ darkMode: isDarkMode });
+  } catch (error) {
+    console.error('Error toggling theme:', error);
+  }
+}
