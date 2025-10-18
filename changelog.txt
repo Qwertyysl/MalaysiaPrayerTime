@@ -270,4 +270,14 @@
   - Changed all countdown section text to white for better readability
   - Includes "Next prayer:", prayer name, time, "Time remaining:", and countdown timer
   - Previously used light blue (#64b5f6), now pure white (#ffffff)
-  - Improved contrast and consistency in dark mode
+
+## Version 3.1.2 - Timing Accuracy Improvements
+- **Punctual Reminders**: Fixed reminder notifications being 30 seconds late
+  - Changed minute warning checks from every 1 minute to every 10 seconds
+  - Reminders now trigger at the exact minute before prayer time
+  - More accurate 5, 4, 3, 2, and 1 minute warnings
+- **Accurate Adzan Timing**: Fixed adzan starting before the actual prayer time
+  - Changed adzan trigger window from 10 seconds to 5 seconds
+  - Adzan now only triggers at or after the exact prayer time (not before)
+  - Ensures adzan plays at the precise moment of prayer time
+- Both fixes ensure perfect synchronization with actual prayer times

@@ -115,9 +115,9 @@ browser.alarms.create('checkNextPrayer', {
   periodInMinutes: 1/6 // Check frequently (every 10 seconds)
 });
 
-// Set up alarm to check for minute warnings every minute
+// Set up alarm to check for minute warnings frequently for better accuracy
 browser.alarms.create('checkMinuteWarnings', {
-  periodInMinutes: 1
+  periodInMinutes: 1/6 // Check every 10 seconds for punctual reminders
 });
 
 // Listen for alarm events
@@ -275,9 +275,9 @@ async function checkNextPrayer() {
         const prayerTimeDate = new Date();
         prayerTimeDate.setHours(parseInt(prayerHours), parseInt(prayerMinutes), 0, 0);
         
-        // Check if current time is within 10 seconds of prayer time
-        const timeDifference = Math.abs(now.getTime() - prayerTimeDate.getTime());
-        return timeDifference <= 10000; // 10 seconds in milliseconds
+        // Check if current time is at or after prayer time (within 5 seconds)
+        const timeDifference = now.getTime() - prayerTimeDate.getTime();
+        return timeDifference >= 0 && timeDifference <= 5000; // 0-5 seconds after prayer time
       });
       
       if (currentPrayer) {
