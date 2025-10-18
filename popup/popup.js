@@ -294,11 +294,28 @@ document.addEventListener('DOMContentLoaded', function() {
     hours = hours ? hours : 12; // Convert 0 to 12
     const formattedHours = hours.toString().padStart(2, '0');
     
-    // Update the clock element with separate time and ampm elements
-    currentTimeElement.innerHTML = `
-      <span class="time">${formattedHours}:${minutes}:${seconds}</span>
-      <span class="ampm">${ampm}</span>
-    `;
+    // Update the clock element with separate time and ampm elements using safe DOM manipulation
+    const timeSpan = currentTimeElement.querySelector('.time');
+    const ampmSpan = currentTimeElement.querySelector('.ampm');
+    
+    if (timeSpan && ampmSpan) {
+      timeSpan.textContent = `${formattedHours}:${minutes}:${seconds}`;
+      ampmSpan.textContent = ampm;
+    } else {
+      // First time initialization - create the elements
+      currentTimeElement.textContent = '';
+      const newTimeSpan = document.createElement('span');
+      newTimeSpan.className = 'time';
+      newTimeSpan.textContent = `${formattedHours}:${minutes}:${seconds}`;
+      
+      const newAmpmSpan = document.createElement('span');
+      newAmpmSpan.className = 'ampm';
+      newAmpmSpan.textContent = ampm;
+      
+      currentTimeElement.appendChild(newTimeSpan);
+      currentTimeElement.appendChild(document.createTextNode(' '));
+      currentTimeElement.appendChild(newAmpmSpan);
+    }
     
     // Update date
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
