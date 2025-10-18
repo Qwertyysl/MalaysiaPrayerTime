@@ -264,3 +264,10 @@
   - Location, audio files, all checkboxes, volume, and theme
   - Settings persist across browser sessions
   - Improved reliability of preference storage
+
+## Version 3.1.1 - Dark Mode Countdown Fix
+- **Dark Mode Text Visibility**: Fixed countdown section text in dark mode
+  - Changed all countdown section text to white for better readability
+  - Includes "Next prayer:", prayer name, time, "Time remaining:", and countdown timer
+  - Previously used light blue (#64b5f6), now pure white (#ffffff)
+  - Improved contrast and consistency in dark mode

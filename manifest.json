@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Prayer Times Malaysia by Nazmi",
-  "version": "3.1",
+  "version": "3.1.1",
   "description": "Displays accurate Islamic prayer times for all Malaysia locations using JAKIM API with custom adzan and doa support",
   
   "icons": {
