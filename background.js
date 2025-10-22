@@ -115,9 +115,9 @@ browser.alarms.create('checkNextPrayer', {
   periodInMinutes: 1/6 // Check frequently (every 10 seconds)
 });
 
-// Set up alarm to check for minute warnings frequently for better accuracy
+// Set up alarm to check for minute warnings every 10 seconds for punctual reminders
 browser.alarms.create('checkMinuteWarnings', {
-  periodInMinutes: 1/6 // Check every 10 seconds for punctual reminders
+  periodInMinutes: 1/6 // Check every 10 seconds
 });
 
 // Listen for alarm events
@@ -242,7 +242,7 @@ async function checkNextPrayer() {
         { name: 'Isha', time: times.isha }
       ];
       
-      // Check if current time matches any prayer time (within 10 seconds)
+      // Check if current time is within 10 seconds before prayer time (for respect mode + adzan)
       const currentPrayer = prayerTimes.find(prayer => {
         // Handle both 12-hour and 24-hour formats
         let prayerTimeToCompare = prayer.time;
@@ -275,9 +275,10 @@ async function checkNextPrayer() {
         const prayerTimeDate = new Date();
         prayerTimeDate.setHours(parseInt(prayerHours), parseInt(prayerMinutes), 0, 0);
         
-        // Check if current time is at or after prayer time (within 5 seconds)
-        const timeDifference = now.getTime() - prayerTimeDate.getTime();
-        return timeDifference >= 0 && timeDifference <= 5000; // 0-5 seconds after prayer time
+        // Check if current time is within 10 seconds before prayer time
+        // This ensures we catch it with our 10-second check interval
+        const timeDifference = prayerTimeDate.getTime() - now.getTime();
+        return timeDifference >= 0 && timeDifference <= 10000; // 0-10 seconds before prayer time
       });
       
       if (currentPrayer) {
@@ -435,29 +436,12 @@ async function playAdzanSound(muteTabs = false, adzanVolume = 100, prayerName = 
     // Store adzan start time
     adzanStartTime = Date.now();
     
-    // Create adzan player HTML page
-    const adzanPlayerUrl = browser.runtime.getURL('adzan-player.html') + 
-      `?volume=${adzanVolume}&prayer=${encodeURIComponent(prayerName)}&enableDoa=${enableDoa}`;
-    
-    // Open adzan player in a new tab
-    const tab = await browser.tabs.create({
-      url: adzanPlayerUrl,
-      active: true
-    });
-    
-    adzanTabId = tab.id;
-    
-    // Pause media in tabs if requested (after creating adzan tab)
+    // Pause media in tabs FIRST if requested (respect mode - before adzan tab opens)
     if (muteTabs) {
       try {
         const tabs = await browser.tabs.query({});
         
         for (const currentTab of tabs) {
-          // Skip the adzan tab itself
-          if (currentTab.id === adzanTabId) {
-            continue;
-          }
-          
           try {
             // Execute script to pause all media elements
             await browser.tabs.executeScript(currentTab.id, {
@@ -492,6 +476,18 @@ async function playAdzanSound(muteTabs = false, adzanVolume = 100, prayerName = 
         console.error('Error pausing media in tabs:', pauseError);
       }
     }
+    
+    // Create adzan player HTML page (after tabs are paused)
+    const adzanPlayerUrl = browser.runtime.getURL('adzan-player.html') + 
+      `?volume=${adzanVolume}&prayer=${encodeURIComponent(prayerName)}&enableDoa=${enableDoa}`;
+    
+    // Open adzan player in a new tab
+    const tab = await browser.tabs.create({
+      url: adzanPlayerUrl,
+      active: true
+    });
+    
+    adzanTabId = tab.id;
     
   } catch (error) {
     console.error('Error playing adzan sound:', error);

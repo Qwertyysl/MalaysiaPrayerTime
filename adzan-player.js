@@ -124,6 +124,16 @@ async function playAdzan() {
       audio.load();
     });
     
+    // Add 5-second respect mode delay before playing adzan
+    console.log('Respect mode: Waiting 5 seconds before playing adzan...');
+    document.getElementById('status').textContent = '🤲 Respect Mode - Preparing...';
+    
+    // Countdown from 5 to 1
+    for (let i = 5; i > 0; i--) {
+      document.getElementById('countdown').textContent = `00:0${i}`;
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
     // Play audio
     console.log('Attempting to play audio...');
     await audio.play();

@@ -159,11 +159,7 @@ body.dark-mode td {
 
 body.dark-mode #next-prayer {
   background: linear-gradient(135deg, #2d3e50 0%, #34495e 100%);
-  color: #ffffff;
-}
-
-body.dark-mode #next-prayer p {
-  color: #ffffff;
+  color: #e0e0e0;
 }
 
 #next-prayer-name {

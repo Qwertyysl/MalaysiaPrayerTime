@@ -265,31 +265,25 @@
   - Settings persist across browser sessions
   - Improved reliability of preference storage
 
-## Version 3.1.1 - Dark Mode Countdown Fix
+## Version 3.2 - Timing Accuracy & Respect Mode 🕌
 - **Dark Mode Text Visibility**: Fixed countdown section text in dark mode
-  - Changed all countdown section text to white for better readability
+  - Changed all countdown section text to white (#ffffff) for better readability
   - Includes "Next prayer:", prayer name, time, "Time remaining:", and countdown timer
-  - Previously used light blue (#64b5f6), now pure white (#ffffff)
-
-## Version 3.1.2 - Timing Accuracy Improvements
+  - Previously used light blue (#64b5f6), now pure white for maximum contrast
 - **Punctual Reminders**: Fixed reminder notifications being 30 seconds late
   - Changed minute warning checks from every 1 minute to every 10 seconds
   - Reminders now trigger at the exact minute before prayer time
   - More accurate 5, 4, 3, 2, and 1 minute warnings
-- **Accurate Adzan Timing**: Fixed adzan starting before the actual prayer time
-  - Changed adzan trigger window from 10 seconds to 5 seconds
-  - Adzan now only triggers at or after the exact prayer time (not before)
-  - Ensures adzan plays at the precise moment of prayer time
-- Both fixes ensure perfect synchronization with actual prayer times
-
-## Version 3.1.3 - Security & Compliance Improvements
-- **Security Enhancement**: Fixed unsafe innerHTML assignment in popup.js
-  - Replaced innerHTML with safe DOM manipulation using textContent and createElement
-  - Prevents potential XSS (Cross-Site Scripting) vulnerabilities
-  - Improves performance by avoiding unnecessary HTML parsing
-  - Clock updates now use direct DOM element manipulation
-- **Firefox Compliance**: Added data_collection_permissions to manifest
-  - Added browser_specific_settings.gecko.data_collection_permissions property
-  - Meets Firefox's requirements for built-in data consent
-  - Set to required: ["none"] to explicitly indicate no data collection
-  - Ensures compatibility with Firefox submission requirements
+- **Precise Adzan Timing**: Adzan now plays shortly BEFORE prayer time
+  - Triggers within 10 seconds before the exact prayer time
+  - Allows for respect mode preparation period (5-second countdown)
+  - Ensures adzan begins playing right around prayer time
+- **Respect Mode Feature**: 5-second preparation period before adzan 🤲
+  - All tabs automatically paused/muted 5 seconds before prayer time
+  - Shows "🤲 Respect Mode - Preparing..." status
+  - 5-second countdown (5, 4, 3, 2, 1) displays during preparation
+  - Creates a moment of silence and respect before the call to prayer
+  - Adzan begins playing after the 5-second respect period
+  - Tabs remain paused during adzan and doa playback
+  - All media resumes after completion
+- Perfect synchronization: respect mode + adzan timing = prayer time arrival
